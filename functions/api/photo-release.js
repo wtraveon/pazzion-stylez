@@ -1,10 +1,8 @@
-import { clean, json, readJson, validEmail, validPhone, verifyTurnstile, emailHtml, sendEmail, methodNotAllowed } from "../_lib/forms.js";
+import { clean, json, readJson, validEmail, validPhone, verifyTurnstile, methodNotAllowed } from "../_lib/forms.js";
 
 export async function onRequestPost({ request, env }) {
   const data = await readJson(request);
   if (!data) return json({ success: false, message: "Please submit the form again. The request was not valid." }, 400);
-
-  // Silently accept honeypot submissions without storing or emailing them.
   if (clean(data._honey, 200)) return json({ success: true, record_id: "received" });
 
   const client = clean(data.client_name, 120);
@@ -33,13 +31,13 @@ export async function onRequestPost({ request, env }) {
   if (!validPhone(phone) || !validPhone(guardianPhone)) {
     return json({ success: false, message: "Please enter a valid phone number." }, 400);
   }
-  if (![ "LaToya Terry", "Kottia Cotton", "Other / not sure" ].includes(provider)) {
+  if (!["LaToya Terry", "Kottia Cotton", "Other / not sure"].includes(provider)) {
     return json({ success: false, message: "Please choose a valid service provider." }, 400);
   }
-  if (![ "I CONSENT to selected photo/video uses", "I DO NOT CONSENT to public photo/video use" ].includes(permission)) {
+  if (!["I CONSENT to selected photo/video uses", "I DO NOT CONSENT to public photo/video use"].includes(permission)) {
     return json({ success: false, message: "Please choose a valid permission option." }, 400);
   }
-  if (![ "Client is 18 or older", "Client is under 18" ].includes(age)) {
+  if (!["Client is 18 or older", "Client is under 18"].includes(age)) {
     return json({ success: false, message: "Please choose the client's age status." }, 400);
   }
 
@@ -49,42 +47,30 @@ export async function onRequestPost({ request, env }) {
     "Salon marketing / promotional materials", "Educational materials"
   ];
   if (isConsent && (!uses.length || uses.some(use => !allowed.includes(use)) ||
-      ![ "Face may be visible", "Do not show my face" ].includes(face) ||
-      ![ "Name may be used", "Do not use my name" ].includes(nameUse))) {
+      !["Face may be visible", "Do not show my face"].includes(face) ||
+      !["Name may be used", "Do not use my name"].includes(nameUse))) {
     return json({ success: false, message: "Please complete your photo-use choices." }, 400);
   }
-  if (age === "Client is under 18") {
-    if (!guardianName || !guardianRelationship || !validEmail(guardianEmail) || !guardianSignature) {
-      return json({ success: false, message: "Parent or legal guardian details are required for a client under 18." }, 400);
-    }
+  if (age === "Client is under 18" &&
+      (!guardianName || !guardianRelationship || !validEmail(guardianEmail) || !guardianSignature)) {
+    return json({ success: false, message: "Parent or legal guardian details are required for a client under 18." }, 400);
   }
 
-  const signed = /^\d{4}-\d{2}-\d{2}$/.test(signedDate) && signedDate <= new Date().toISOString().slice(0, 10);
-  if (!signed) return json({ success: false, message: "Please enter a valid signing date." }, 400);
+  const today = new Date().toISOString().slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(signedDate) || signedDate > today) {
+    return json({ success: false, message: "Please enter a valid signing date." }, 400);
+  }
   if (serviceDate && !/^\d{4}-\d{2}-\d{2}$/.test(serviceDate)) {
     return json({ success: false, message: "Please enter a valid service date." }, 400);
   }
   if (!(await verifyTurnstile(token, request, env))) {
     return json({ success: false, message: "Spam verification failed. Please complete verification and try again." }, 403);
   }
-
-  // Fail closed: never tell a client the release was recorded unless D1 confirms it.
   if (!env.PHOTO_RELEASES_DB) {
     return json({ success: false, message: "Photo-release records are not configured yet. Please contact the salon before any photos or video are used." }, 503);
   }
 
   const recordId = crypto.randomUUID();
-  const submittedAt = new Date().toISOString();
-  const fields = [
-    ["Client full name", client], ["Client email", email], ["Client phone", phone],
-    ["Service date", serviceDate], ["Service provider", provider], ["Permission", permission],
-    ["Allowed uses", isConsent ? uses : []], ["Face visibility", isConsent ? face : "Not authorized / not applicable"],
-    ["Name use", isConsent ? nameUse : "Not authorized / not applicable"], ["Age status", age],
-    ["Client typed signature", signature], ["Date signed", signedDate], ["Acknowledgment", acknowledgment],
-    ["Guardian name", guardianName], ["Guardian relationship", guardianRelationship],
-    ["Guardian email", guardianEmail], ["Guardian phone", guardianPhone], ["Guardian typed signature", guardianSignature]
-  ];
-
   try {
     await env.PHOTO_RELEASES_DB.prepare(
       `INSERT INTO photo_release_records (
@@ -92,9 +78,9 @@ export async function onRequestPost({ request, env }) {
         service_provider, permission, allowed_uses_json, face_visible, name_use, age_status,
         client_signature, date_signed, acknowledgment, guardian_name, guardian_relationship,
         guardian_email, guardian_phone, guardian_signature, notification_status
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'not-configured')`
     ).bind(
-      recordId, submittedAt, client, email, phone, serviceDate, provider, permission,
+      recordId, new Date().toISOString(), client, email, phone, serviceDate, provider, permission,
       JSON.stringify(isConsent ? uses : []), isConsent ? face : "", isConsent ? nameUse : "",
       age, signature, signedDate, acknowledgment, guardianName, guardianRelationship,
       guardianEmail, guardianPhone, guardianSignature
@@ -103,24 +89,11 @@ export async function onRequestPost({ request, env }) {
     return json({ success: false, message: "We could not securely save the release. Please contact the salon before any photos or video are used." }, 503);
   }
 
-  // The signed record is saved before notification email is attempted.
-  const sent = await sendEmail(env, `Photo/video release submitted: ${client}`, emailHtml("Pazzion Stylez photo/video release submission", fields, recordId), email);
-  const notificationStatus = sent.ok ? "sent" : "failed";
-  try {
-    await env.PHOTO_RELEASES_DB.prepare(
-      "UPDATE photo_release_records SET notification_status = ?, notification_updated_at = ? WHERE record_id = ?"
-    ).bind(notificationStatus, new Date().toISOString(), recordId).run();
-  } catch {
-    // The primary release record already exists; notification state can be reconciled manually.
-  }
-
   return json({
     success: true,
     record_id: recordId,
-    notification_sent: sent.ok,
-    message: sent.ok
-      ? "Your photo-release preference has been securely recorded."
-      : "Your photo-release preference has been securely recorded. The salon notification is delayed; keep your reference number."
+    notification_sent: false,
+    message: "Your photo-release preference has been securely recorded. The salon has not been emailed automatically; keep your reference number."
   });
 }
 
