@@ -54,26 +54,33 @@ export async function verifyTurnstile(token, request, env) {
 }
 
 export async function sendEmail(env, subject, html, replyTo) {
-  if (!env.RESEND_API_KEY || !env.CONTACT_EMAIL || !env.FROM_EMAIL) {
+  if (!env.CLOUDFLARE_ACCOUNT_ID || !env.CLOUDFLARE_EMAIL_API_TOKEN ||
+      !env.FORM_NOTIFICATION_TO || !env.FROM_EMAIL) {
     return { ok: false, configurationError: true };
   }
   try {
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${env.RESEND_API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        from: env.FROM_EMAIL,
-        to: [env.CONTACT_EMAIL],
-        subject,
-        html,
-        ...(replyTo ? { reply_to: replyTo } : {})
-      })
-    });
+    const response = await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${env.CLOUDFLARE_ACCOUNT_ID}/email/sending/send`,
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${env.CLOUDFLARE_EMAIL_API_TOKEN}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          from: env.FROM_EMAIL,
+          to: [env.FORM_NOTIFICATION_TO],
+          subject,
+          html,
+          ...(replyTo ? { reply_to: replyTo } : {})
+        })
+      }
+    );
     const result = await response.json().catch(() => ({}));
-    return { ok: response.ok, id: result.id || null };
+    return {
+      ok: response.ok && result.success === true,
+      id: result.result?.message_id || null
+    };
   } catch {
     return { ok: false };
   }
