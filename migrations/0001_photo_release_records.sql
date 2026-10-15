@@ -35,3 +35,20 @@ CREATE INDEX IF NOT EXISTS idx_photo_release_submitted_at
 
 CREATE INDEX IF NOT EXISTS idx_photo_release_client_email
   ON photo_release_records(client_email);
+
+
+-- Contact submissions are retained separately from signed release records.
+CREATE TABLE IF NOT EXISTS contact_messages (
+  record_id TEXT PRIMARY KEY,
+  submitted_at TEXT NOT NULL,
+  name TEXT NOT NULL,
+  email TEXT NOT NULL DEFAULT '',
+  phone TEXT NOT NULL DEFAULT '',
+  topic TEXT NOT NULL,
+  preferred_stylist TEXT NOT NULL DEFAULT '',
+  message TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'saved'
+);
+
+CREATE INDEX IF NOT EXISTS idx_contact_messages_submitted_at
+  ON contact_messages(submitted_at);
