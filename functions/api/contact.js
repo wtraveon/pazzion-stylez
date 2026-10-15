@@ -1,4 +1,4 @@
-import { clean, json, readJson, validEmail, validPhone, verifyTurnstile, methodNotAllowed } from "../_lib/forms.js";
+import { clean, emailHtml, json, readJson, sendEmail, validEmail, validPhone, verifyTurnstile, methodNotAllowed } from "../_lib/forms.js";
 
 export async function onRequestPost({ request, env }) {
   const data = await readJson(request);
@@ -31,15 +31,38 @@ export async function onRequestPost({ request, env }) {
   const recordId = crypto.randomUUID();
   try {
     await env.PHOTO_RELEASES_DB.prepare(
-      "INSERT INTO contact_messages (record_id, submitted_at, name, email, phone, topic, preferred_stylist, message, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'new')"
+      "INSERT INTO contact_messages (record_id, submitted_at, name, email, phone, topic, preferred_stylist, message, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'saved')"
     ).bind(recordId, new Date().toISOString(), name, email, phone, topic, preferred, message).run();
   } catch {
     return json({ success: false, message: "We could not securely save your message. Please call or email Pazzion Stylez directly." }, 503);
   }
+
+  const fields = [
+    ["Name", name], ["Email", email], ["Phone", phone], ["Topic", topic],
+    ["Preferred stylist", preferred], ["Message", message]
+  ];
+  const notification = await sendEmail(
+    env,
+    `Website contact: ${topic}`,
+    emailHtml("New Pazzion Stylez website message", fields, recordId),
+    email || undefined
+  );
+
+  try {
+    await env.PHOTO_RELEASES_DB.prepare(
+      "UPDATE contact_messages SET status = ? WHERE record_id = ?"
+    ).bind(notification.ok ? "emailed" : "email_failed", recordId).run();
+  } catch {
+    // The saved message remains available even if its notification status cannot be updated.
+  }
+
   return json({
     success: true,
     record_id: recordId,
-    message: "Your message has been securely saved. The salon has not been emailed automatically, so please call or text if your request is urgent."
+    notification_sent: notification.ok,
+    message: notification.ok
+      ? "Your message was saved and the salon was notified."
+      : "Your message was saved, but the salon notification could not be sent automatically. Please call or text if your request is urgent."
   });
 }
 
