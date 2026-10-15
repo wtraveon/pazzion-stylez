@@ -1,4 +1,4 @@
-import { clean, json, readJson, validEmail, validPhone, verifyTurnstile, methodNotAllowed } from "../_lib/forms.js";
+import { clean, emailHtml, json, readJson, sendEmail, validEmail, validPhone, verifyTurnstile, methodNotAllowed } from "../_lib/forms.js";
 
 export async function onRequestPost({ request, env }) {
   const data = await readJson(request);
@@ -31,13 +31,13 @@ export async function onRequestPost({ request, env }) {
   if (!validPhone(phone) || !validPhone(guardianPhone)) {
     return json({ success: false, message: "Please enter a valid phone number." }, 400);
   }
-  if (!["LaToya Terry", "Kottia Cotton", "Other / not sure"].includes(provider)) {
+  if (![ "LaToya Terry", "Kottia Cotton", "Other / not sure" ].includes(provider)) {
     return json({ success: false, message: "Please choose a valid service provider." }, 400);
   }
-  if (!["I CONSENT to selected photo/video uses", "I DO NOT CONSENT to public photo/video use"].includes(permission)) {
+  if (![ "I CONSENT to selected photo/video uses", "I DO NOT CONSENT to public photo/video use" ].includes(permission)) {
     return json({ success: false, message: "Please choose a valid permission option." }, 400);
   }
-  if (!["Client is 18 or older", "Client is under 18"].includes(age)) {
+  if (![ "Client is 18 or older", "Client is under 18" ].includes(age)) {
     return json({ success: false, message: "Please choose the client's age status." }, 400);
   }
 
@@ -47,8 +47,8 @@ export async function onRequestPost({ request, env }) {
     "Salon marketing / promotional materials", "Educational materials"
   ];
   if (isConsent && (!uses.length || uses.some(use => !allowed.includes(use)) ||
-      !["Face may be visible", "Do not show my face"].includes(face) ||
-      !["Name may be used", "Do not use my name"].includes(nameUse))) {
+      ![ "Face may be visible", "Do not show my face" ].includes(face) ||
+      ![ "Name may be used", "Do not use my name" ].includes(nameUse))) {
     return json({ success: false, message: "Please complete your photo-use choices." }, 400);
   }
   if (age === "Client is under 18" &&
@@ -57,10 +57,10 @@ export async function onRequestPost({ request, env }) {
   }
 
   const today = new Date().toISOString().slice(0, 10);
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(signedDate) || signedDate > today) {
+  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(signedDate) || signedDate > today) {
     return json({ success: false, message: "Please enter a valid signing date." }, 400);
   }
-  if (serviceDate && !/^\d{4}-\d{2}-\d{2}$/.test(serviceDate)) {
+  if (serviceDate && !/^\\d{4}-\\d{2}-\\d{2}$/.test(serviceDate)) {
     return json({ success: false, message: "Please enter a valid service date." }, 400);
   }
   if (!(await verifyTurnstile(token, request, env))) {
@@ -78,7 +78,7 @@ export async function onRequestPost({ request, env }) {
         service_provider, permission, allowed_uses_json, face_visible, name_use, age_status,
         client_signature, date_signed, acknowledgment, guardian_name, guardian_relationship,
         guardian_email, guardian_phone, guardian_signature, notification_status
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'not-configured')`
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`
     ).bind(
       recordId, new Date().toISOString(), client, email, phone, serviceDate, provider, permission,
       JSON.stringify(isConsent ? uses : []), isConsent ? face : "", isConsent ? nameUse : "",
@@ -89,11 +89,38 @@ export async function onRequestPost({ request, env }) {
     return json({ success: false, message: "We could not securely save the release. Please contact the salon before any photos or video are used." }, 503);
   }
 
+  const fields = [
+    ["Client", client], ["Client email", email], ["Client phone", phone],
+    ["Service date", serviceDate], ["Service provider", provider], ["Permission", permission],
+    ["Allowed uses", isConsent ? uses : []], ["Face preference", isConsent ? face : "Not applicable"],
+    ["Name preference", isConsent ? nameUse : "Not applicable"], ["Age status", age],
+    ["Client typed signature", signature], ["Date signed", signedDate],
+    ["Guardian name", guardianName], ["Guardian relationship", guardianRelationship],
+    ["Guardian email", guardianEmail], ["Guardian phone", guardianPhone],
+    ["Guardian typed signature", guardianSignature]
+  ];
+  const notification = await sendEmail(
+    env,
+    `Photo/video release: ${permission.includes("DO NOT CONSENT") ? "DECLINED" : "CONSENT"}`,
+    emailHtml("Pazzion Stylez photo/video release record", fields, recordId),
+    email
+  );
+
+  try {
+    await env.PHOTO_RELEASES_DB.prepare(
+      "UPDATE photo_release_records SET notification_status = ?, notification_updated_at = ? WHERE record_id = ?"
+    ).bind(notification.ok ? "sent" : "failed", new Date().toISOString(), recordId).run();
+  } catch {
+    // The durable release remains saved even if notification tracking cannot be updated.
+  }
+
   return json({
     success: true,
     record_id: recordId,
-    notification_sent: false,
-    message: "Your photo-release preference has been securely recorded. The salon has not been emailed automatically; keep your reference number."
+    notification_sent: notification.ok,
+    message: notification.ok
+      ? "Your photo-release preference has been recorded and the salon was notified. Keep your reference number."
+      : "Your photo-release preference has been securely recorded, but the salon notification could not be sent automatically. Keep your reference number and contact the salon if you need confirmation."
   });
 }
 
