@@ -23,7 +23,7 @@ Official Cloudflare instructions: https://developers.cloudflare.com/email-servic
 
 ## Cloudflare D1 — durable photo-release records
 
-Create a D1 database for the preview and run `migrations/0001_photo_release_records.sql`. Bind it to the Pages project using the exact binding name:
+Create a D1 database for the preview and run `migrations/0001_photo_release_records.sql`. This migration creates both `photo_release_records` and `contact_messages`. Bind the database to the Pages project using the exact binding name:
 
 `PHOTO_RELEASES_DB`
 
@@ -39,8 +39,8 @@ Treat these records as confidential personal data:
 ## Endpoints
 
 - `GET /api/form-config` — returns the public Turnstile site key and whether Turnstile configuration is present.
-- `POST /api/contact` — validates contact details, verifies Turnstile server-side, then sends email through Cloudflare Email Service.
-- `POST /api/photo-release` — validates consent, verifies Turnstile server-side, saves a durable D1 record, then sends email through Cloudflare Email Service.
+- `POST /api/contact` — validates contact details, verifies Turnstile server-side, saves the message to D1, then attempts email notification through Cloudflare Email Service. The D1 status records whether notification succeeded.
+- `POST /api/photo-release` — validates consent, verifies Turnstile server-side, saves a durable D1 record, then attempts email notification through Cloudflare Email Service. Notification status is tracked separately; a notification failure does not erase the saved record.
 
 ## Preview test checklist
 
@@ -48,6 +48,6 @@ Treat these records as confidential personal data:
 2. Set the Preview variables above and a preview-specific Turnstile widget.
 3. Ensure the sender domain is onboarded in Cloudflare Email Service and the token has Email Sending: Edit permission.
 4. Create the D1 database, run the migration, and add the `PHOTO_RELEASES_DB` binding.
-5. Test valid/invalid contact submissions; consent and decline releases; minor/guardian submissions; Turnstile failure; missing D1 binding; and email failure after a successful D1 save.
+5. Test valid/invalid contact submissions; consent and decline releases; minor/guardian submissions; Turnstile failure; missing D1 binding; and email failure after a successful D1 save. Confirm each submission is saved even if notification email fails.
 6. Verify stored records, notification status, access controls, and a backup restore using fictional data.
 7. Plan any production cutover separately after review. Do not change live DNS as part of preview testing.
