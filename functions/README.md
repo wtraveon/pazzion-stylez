@@ -1,53 +1,53 @@
-# Pages form endpoints — setup notes
+# Pages form endpoints — Cloudflare-only setup
 
-These Cloudflare Pages Functions power the contact and photo/video release forms. They are source code only until deployed to a Pages project and configured.
+These Cloudflare Pages Functions power the contact and photo/video release forms. They are source code only until deployed and configured.
 
 ## Preview-first configuration
 
-Configure the **rebuild / preview Pages project first**, not the current live project. Do not change the current live domain or DNS while testing.
+Configure the **rebuild / preview Pages project first**, not the current live project. Do not change the current live domain or DNS.
 
-### Cloudflare Pages environment variables
+## Preview environment variables
 
-Set these for Preview and Production separately as appropriate. For the initial preview, only set Preview values:
+Use Cloudflare Email Service's REST API for outgoing notifications; no Resend account is required.
 
-- `TURNSTILE_SITE_KEY` — public Turnstile site key allowed for the preview hostname.
-- `TURNSTILE_SECRET_KEY` — private Turnstile secret; store as a secret, never in source control.
-- `RESEND_API_KEY` — private Resend API key; store as a secret.
-- `CONTACT_EMAIL` — inbox that should receive website inquiries and photo-release notifications.
-- `FROM_EMAIL` — sender address verified with Resend.
+- `TURNSTILE_SITE_KEY` — public Turnstile site key configured for the preview hostname.
+- `TURNSTILE_SECRET_KEY` — private Turnstile secret; store as a secret.
+- `CLOUDFLARE_EMAIL_API_TOKEN` — Cloudflare API token with Email Sending: Edit permission; store as a secret.
+- `CLOUDFLARE_ACCOUNT_ID` — Cloudflare account ID for the account that owns the email-sending setup.
+- `FORM_NOTIFICATION_TO` — salon inbox for contact and photo-release notifications.
+- `FROM_EMAIL` — sender address on a domain onboarded in Cloudflare Email Service.
 
-Never commit real secret values to GitHub or put them in HTML/JavaScript.
+The code accepts `CONTACT_EMAIL` as a fallback recipient, but prefer the existing `FORM_NOTIFICATION_TO` setting. Never commit real secret values to GitHub. Do not assume a token named `CLOUDFLARE_EMAIL_API_TOKEN` has the right permission until verified. If Email Sending is not enabled for the account, enable/onboard it through Cloudflare's Email Service before expecting delivery.
 
-## Cloudflare D1 — permanent release record
+Official Cloudflare instructions: https://developers.cloudflare.com/email-service/get-started/send-emails/
 
-Create a D1 database for the preview project and run the migration in `migrations/0001_photo_release_records.sql`. Bind that database to the Pages project with the exact binding name:
+## Cloudflare D1 — durable photo-release records
+
+Create a D1 database for the preview and run `migrations/0001_photo_release_records.sql`. Bind it to the Pages project using the exact binding name:
 
 `PHOTO_RELEASES_DB`
 
-The photo-release endpoint now **fails closed** if this binding is missing or the record cannot be saved. It writes the complete submitted permission, choices, typed signature, signing date, and guardian fields to D1 before attempting notification email. Email delivery failure does not erase the saved record; the endpoint records notification status when possible and returns the reference ID.
+The photo-release endpoint fails closed if this binding is missing or a record cannot be saved. It writes the submitted permission, choices, typed signature, signing date, and guardian fields to D1 before attempting notification email. Email delivery failure does not erase the saved record; notification status is tracked separately when possible.
 
-Treat this database as confidential personal data:
+Treat these records as confidential personal data:
 - Limit database access to authorized salon administrators.
-- Enable and verify available backup/export procedures before accepting real releases.
-- Set a written retention period and deletion process consistent with salon/legal requirements; do not keep records indefinitely by default.
-- Do not use real client information during testing. Use clearly fictional test records.
-- Test retrieval and restoration of a backup before relying on this as the sole record.
-- Consider having a qualified North Carolina attorney review the release language and retention process before operational use.
-
-The reference ID is a D1 record ID once the endpoint returns success. It is not a substitute for backups or an audited records-management policy.
+- Establish and test backup/export and restore procedures before accepting real releases.
+- Set a written retention period and deletion process; do not keep records indefinitely by default.
+- Use fictional test records during testing.
+- Consider qualified North Carolina legal review of release language and retention practices.
 
 ## Endpoints
 
-- `GET /api/form-config` — returns only the public Turnstile site key and whether required Turnstile configuration is present.
-- `POST /api/contact` — validates the contact message, verifies Turnstile server-side, then emails the salon inbox.
-- `POST /api/photo-release` — validates consent, verifies Turnstile server-side, saves a durable D1 record, then emails the salon inbox.
+- `GET /api/form-config` — returns the public Turnstile site key and whether Turnstile configuration is present.
+- `POST /api/contact` — validates contact details, verifies Turnstile server-side, then sends email through Cloudflare Email Service.
+- `POST /api/photo-release` — validates consent, verifies Turnstile server-side, saves a durable D1 record, then sends email through Cloudflare Email Service.
 
-## Safe preview test checklist
+## Preview test checklist
 
-1. Create a separate Cloudflare Pages project for the rebuild, connected to branch `preview/cloudflare-record-retention`; do not attach the live custom domain.
-2. Add preview-only environment variables and the `PHOTO_RELEASES_DB` binding.
-3. Configure a preview-specific Turnstile widget/key and verify the sender domain in Resend.
-4. Apply the D1 migration.
-5. Test valid/invalid contact submissions; consent and decline releases; minor/guardian submissions; Turnstile failure; missing database binding; and email failure after a successful database save.
-6. Verify the stored record, notification status, access permissions, and a backup restore using test data.
-7. Only after all tests pass should a separate production cutover be planned. Do not change live DNS as part of preview testing.
+1. Create a separate Cloudflare Pages project for branch `preview/cloudflare-record-retention`; do not attach the live custom domain.
+2. Set the Preview variables above and a preview-specific Turnstile widget.
+3. Ensure the sender domain is onboarded in Cloudflare Email Service and the token has Email Sending: Edit permission.
+4. Create the D1 database, run the migration, and add the `PHOTO_RELEASES_DB` binding.
+5. Test valid/invalid contact submissions; consent and decline releases; minor/guardian submissions; Turnstile failure; missing D1 binding; and email failure after a successful D1 save.
+6. Verify stored records, notification status, access controls, and a backup restore using fictional data.
+7. Plan any production cutover separately after review. Do not change live DNS as part of preview testing.
