@@ -1,10 +1,8 @@
-import { clean, json, readJson, validEmail, validPhone, verifyTurnstile, emailHtml, sendEmail, methodNotAllowed } from "../_lib/forms.js";
+import { clean, emailHtml, json, readJson, sendEmail, validEmail, validPhone, verifyTurnstile, methodNotAllowed } from "../_lib/forms.js";
 
 export async function onRequestPost({ request, env }) {
   const data = await readJson(request);
   if (!data) return json({ success: false, message: "Please submit the form again. The request was not valid." }, 400);
-
-  // Silently accept honeypot submissions without sending them.
   if (clean(data._honey, 200)) return json({ success: true, record_id: "received" });
 
   const name = clean(data.name, 120);
@@ -26,19 +24,46 @@ export async function onRequestPost({ request, env }) {
   if (!(await verifyTurnstile(token, request, env))) {
     return json({ success: false, message: "Spam verification failed. Please complete verification and try again." }, 403);
   }
+  if (!env.PHOTO_RELEASES_DB) {
+    return json({ success: false, message: "Online messages are not configured yet. Please call or email Pazzion Stylez directly." }, 503);
+  }
 
   const recordId = crypto.randomUUID();
-  const fields = [
-    ["Reference", recordId], ["Name", name], ["Email", email], ["Phone", phone],
-    ["Topic", topic], ["Preferred stylist", preferred], ["Message", message]
-  ];
-  const sent = await sendEmail(env, `Website inquiry: ${topic}`, emailHtml("New Pazzion Stylez website inquiry", fields, recordId), email || undefined);
-  if (!sent.ok) {
-    return json({ success: false, message: sent.configurationError
-      ? "Online messages are not configured yet. Please call or email Pazzion Stylez directly."
-      : "We could not send your message right now. Please call or email Pazzion Stylez." }, 503);
+  try {
+    await env.PHOTO_RELEASES_DB.prepare(
+      "INSERT INTO contact_messages (record_id, submitted_at, name, email, phone, topic, preferred_stylist, message, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'saved')"
+    ).bind(recordId, new Date().toISOString(), name, email, phone, topic, preferred, message).run();
+  } catch {
+    return json({ success: false, message: "We could not securely save your message. Please call or email Pazzion Stylez directly." }, 503);
   }
-  return json({ success: true, record_id: recordId });
+
+  const fields = [
+    ["Name", name], ["Email", email], ["Phone", phone], ["Topic", topic],
+    ["Preferred stylist", preferred], ["Message", message]
+  ];
+  const notification = await sendEmail(
+    env,
+    `Website contact: ${topic}`,
+    emailHtml("New Pazzion Stylez website message", fields, recordId),
+    email || undefined
+  );
+
+  try {
+    await env.PHOTO_RELEASES_DB.prepare(
+      "UPDATE contact_messages SET status = ? WHERE record_id = ?"
+    ).bind(notification.ok ? "emailed" : "email_failed", recordId).run();
+  } catch {
+    // The saved message remains available even if its notification status cannot be updated.
+  }
+
+  return json({
+    success: true,
+    record_id: recordId,
+    notification_sent: notification.ok,
+    message: notification.ok
+      ? "Your message was saved and the salon was notified."
+      : "Your message was saved, but the salon notification could not be sent automatically. Please call or text if your request is urgent."
+  });
 }
 
 export function onRequest({ request }) {

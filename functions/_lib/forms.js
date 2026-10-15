@@ -13,11 +13,11 @@ export function clean(value, max = 2000) {
 }
 
 export function validEmail(value) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(value);
 }
 
 export function validPhone(value) {
-  return !value || /^[+()\d.\s-]{7,25}$/.test(value);
+  return !value || /^[+()\\d.\\s-]{7,25}$/.test(value);
 }
 
 export function escapeHtml(value) {
@@ -54,26 +54,31 @@ export async function verifyTurnstile(token, request, env) {
 }
 
 export async function sendEmail(env, subject, html, replyTo) {
-  if (!env.RESEND_API_KEY || !env.CONTACT_EMAIL || !env.FROM_EMAIL) {
+  const apiKey = env.RESEND_API_KEY;
+  const recipient = env.FORM_NOTIFICATION_TO || env.CONTACT_EMAIL;
+  const sender = env.FROM_EMAIL;
+
+  if (!apiKey || !recipient || !sender) {
     return { ok: false, configurationError: true };
   }
+
   try {
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${env.RESEND_API_KEY}`,
+        "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        from: env.FROM_EMAIL,
-        to: [env.CONTACT_EMAIL],
+        from: sender,
+        to: [recipient],
         subject,
         html,
         ...(replyTo ? { reply_to: replyTo } : {})
       })
     });
     const result = await response.json().catch(() => ({}));
-    return { ok: response.ok, id: result.id || null };
+    return { ok: response.ok && typeof result?.id === "string" && result.id.length > 0 };
   } catch {
     return { ok: false };
   }
