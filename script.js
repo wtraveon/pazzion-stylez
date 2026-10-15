@@ -45,9 +45,9 @@ const clientStatusButtons=[...document.querySelectorAll('[data-client-status]')]
 const changeStylistButton=document.getElementById('changeStylist');
 let selectedStylist='';
 
-function stylistDisplayName(key){return key==='latoya'?'LaToya Terry':key==='kottia'?'Kottia Cotton':'';}
+function stylistDisplayName(key){return key==='latoya'?'LaToya Terry':key==='kottia'?'Kottia Cotton':key==='jahniqua'?'JahNiqua Speight':'';}
 function selectBookingStylist(key,{focusStep=true}={}){
-  if(!['latoya','kottia'].includes(key)) return;
+  if(!['latoya','kottia','jahniqua'].includes(key)) return;
   selectedStylist=key;
   stylistButtons.forEach(button=>button.setAttribute('aria-pressed',button.dataset.stylist===key?'true':'false'));
   if(selectedStylistSummary) selectedStylistSummary.textContent=`You selected ${stylistDisplayName(key)}.`;
