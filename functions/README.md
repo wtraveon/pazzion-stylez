@@ -11,7 +11,7 @@ Configure these in the Cloudflare Pages project that is intended to serve the si
 - `CLOUDFLARE_ACCOUNT_ID` — Cloudflare account ID used by the Email Sending API.
 - `CLOUDFLARE_EMAIL_API_TOKEN` — private API token with the required email-sending permission; store as a secret.
 - `FORM_NOTIFICATION_TO` — inbox that should receive website inquiries and photo-release submissions.
-- `FROM_EMAIL` — sender address verified with Resend, for example a verified address at the site's domain.
+- `FROM_EMAIL` — sender address authorized for use with the Cloudflare Email Sending API, for example an approved address at the site's domain.
 
 Do not commit actual secret values to GitHub or place them in HTML/JavaScript. Set production and preview values separately.
 
