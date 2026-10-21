@@ -314,6 +314,19 @@
 </div>
 </div>
 </section>
+<style>
+.ps-home-product-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:1.1rem}
+.ps-home-product{height:100%;border-radius:16px;overflow:hidden}
+.ps-home-product img{aspect-ratio:4/3;object-fit:cover;width:100%;height:auto}
+.ps-home-product>div{display:flex;flex-direction:column;align-items:flex-start;gap:.3rem}
+.ps-home-product .ps-product-category{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:#8b477e;font-weight:700}
+.ps-home-product h3{margin:.3rem 0}
+.ps-home-product p{flex:1}
+.ps-home-product .profile-detail-link{font-weight:700;color:#7d2679}
+@media(max-width:1000px){.ps-home-product-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:700px){.ps-home-product-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:420px){.ps-home-product-grid{grid-template-columns:1fr}}
+</style>
 <section class="section products-section" id="products">
 <div class="container">
 <div class="product-intro-grid"><div><span class="eyebrow">PAZZION STYLEZ COLLECTION</span><h2>Healthy-hair and body care for your routine.</h2><p>Shop locally or contact Pazzion Stylez to order. Select products are available in 4 oz, 8 oz and 16 oz sizes, with current pricing ranging from $5–$20. Pickup and shipping options are available through the secure Square store.</p><div class="hero-actions">
@@ -323,11 +336,17 @@
 <a class="btn btn-ghost" href="tel:+12523609630">Call Product Orders — 252-360-9630</a>
 </div>
 <p class="square-shop-note">Shop securely online with Square for available Pazzion Stylez products, pickup, and shipping options.</p></div><img alt="Pazzion Stylez hair and body product collection" decoding="async" height="1100" loading="lazy" src="assets/images/products/healthy-hair-body-collection.webp" width="825"/></div>
-<div class="product-grid">
-<article class="product-card"><img alt="Pazzion Stylez hair growth oil" decoding="async" height="900" loading="lazy" src="assets/images/products/hair-growth-oil.webp" width="675"/><div><h3>Healthy Hair Essentials</h3><p>Clarifying Shampoo • Moisturizing Shampoo • Leave-In Conditioner • Hair Growth Oil</p><small>Designed to cleanse, moisturize, condition and support a consistent healthy-hair routine.</small></div></article>
-<article class="product-card"><img alt="Pazzion Stylez scalp care products" decoding="async" height="900" loading="lazy" src="assets/images/products/scalp-care.webp" width="675"/><div><h3>Scalp &amp; Moisture Care</h3><p>Hair Moisturizing Cream • Scalp Balm</p><small>Moisture-focused care for dry hair, protective styles and routine scalp conditioning.</small></div></article>
-<article class="product-card"><img alt="Pazzion Stylez flaxseed gel and styling care" decoding="async" height="900" loading="lazy" src="assets/images/products/styling-care.webp" width="675"/><div><h3>Styling &amp; Beard Care</h3><p>Flaxseed Gel • Beard Oil</p><small>Lightweight styling support plus conditioning care for facial hair and the skin beneath it.</small></div></article>
-<article class="product-card"><img alt="Pazzion Stylez foot soak" decoding="async" height="900" loading="lazy" src="assets/images/products/foot-soak.webp" width="675"/><div><h3>Foot Care Collection</h3><p>Foot Soak • Foot Scrub • Foot Oil</p><small>A simple three-step routine to refresh, exfoliate and moisturize tired feet.</small></div></article>
+<div class="product-grid ps-home-product-grid">
+<article class="product-card ps-home-product"><img alt="Pazzion Stylez Beard Oil" decoding="async" height="900" loading="lazy" src="assets/images/products/styling-care.webp" width="675"/><div><span class="ps-product-category">Styling & Beard Care</span><h3>Beard Oil</h3><p>Conditioning care for facial hair and the skin beneath it.</p><a class="profile-detail-link" href="https://pazzion-stylez-llc.square.site/" target="_blank" rel="noopener">Shop on Square ↗</a></div></article>
+<article class="product-card ps-home-product"><img alt="Pazzion Stylez Hair Growth Oil" decoding="async" height="900" loading="lazy" src="assets/images/products/hair-growth-oil.webp" width="675"/><div><span class="ps-product-category">Healthy Hair Essentials</span><h3>Hair Growth Oil</h3><p>A lightweight oil for a nourishing hair-care routine.</p><a class="profile-detail-link" href="https://pazzion-stylez-llc.square.site/" target="_blank" rel="noopener">Shop on Square ↗</a></div></article>
+<article class="product-card ps-home-product"><img alt="Pazzion Stylez Scalp Treatment" decoding="async" height="900" loading="lazy" src="assets/images/products/scalp-care.webp" width="675"/><div><span class="ps-product-category">Scalp & Moisture Care</span><h3>Scalp Treatment</h3><p>A scalp-care product for your regular wash-day routine.</p><a class="profile-detail-link" href="https://pazzion-stylez-llc.square.site/" target="_blank" rel="noopener">Shop on Square ↗</a></div></article>
+<article class="product-card ps-home-product"><img alt="Pazzion Stylez Hair Moisturizing Cream" decoding="async" height="900" loading="lazy" src="assets/images/products/scalp-care.webp" width="675"/><div><span class="ps-product-category">Scalp & Moisture Care</span><h3>Hair Moisturizing Cream</h3><p>Moisture-focused care for softness and manageability.</p><a class="profile-detail-link" href="https://pazzion-stylez-llc.square.site/" target="_blank" rel="noopener">Shop on Square ↗</a></div></article>
+<article class="product-card ps-home-product"><img alt="Pazzion Stylez Foot Soak" decoding="async" height="900" loading="lazy" src="assets/images/products/foot-soak.webp" width="675"/><div><span class="ps-product-category">Foot Care</span><h3>Foot Soak</h3><p>A relaxing soak to refresh tired feet.</p><a class="profile-detail-link" href="https://pazzion-stylez-llc.square.site/" target="_blank" rel="noopener">Shop on Square ↗</a></div></article>
+<article class="product-card ps-home-product"><img alt="Pazzion Stylez Foot Scrub" decoding="async" height="900" loading="lazy" src="assets/images/products/foot-soak.webp" width="675"/><div><span class="ps-product-category">Foot Care</span><h3>Foot Scrub</h3><p>Exfoliating care to smooth the feel of your feet.</p><a class="profile-detail-link" href="https://pazzion-stylez-llc.square.site/" target="_blank" rel="noopener">Shop on Square ↗</a></div></article>
+<article class="product-card ps-home-product"><img alt="Pazzion Stylez Foot Oil" decoding="async" height="900" loading="lazy" src="assets/images/products/foot-soak.webp" width="675"/><div><span class="ps-product-category">Foot Care</span><h3>Foot Oil</h3><p>Finishing moisture for a simple foot-care routine.</p><a class="profile-detail-link" href="https://pazzion-stylez-llc.square.site/" target="_blank" rel="noopener">Shop on Square ↗</a></div></article>
+<article class="product-card ps-home-product"><img alt="Pazzion Stylez Leave-In Conditioner" decoding="async" height="900" loading="lazy" src="assets/images/products/styling-care.webp" width="675"/><div><span class="ps-product-category">Healthy Hair Essentials</span><h3>Leave-In Conditioner</h3><p>Leave-in conditioning support between wash days.</p><a class="profile-detail-link" href="https://pazzion-stylez-llc.square.site/" target="_blank" rel="noopener">Shop on Square ↗</a></div></article>
+<article class="product-card ps-home-product"><img alt="Pazzion Stylez Moisturizing Shampoo" decoding="async" height="900" loading="lazy" src="assets/images/products/healthy-hair-body-collection.webp" width="675"/><div><span class="ps-product-category">Healthy Hair Essentials</span><h3>Moisturizing Shampoo</h3><p>Cleansing for a moisture-focused wash routine.</p><a class="profile-detail-link" href="https://pazzion-stylez-llc.square.site/" target="_blank" rel="noopener">Shop on Square ↗</a></div></article>
+<article class="product-card ps-home-product"><img alt="Pazzion Stylez Clarifying Shampoo" decoding="async" height="900" loading="lazy" src="assets/images/products/healthy-hair-body-collection.webp" width="675"/><div><span class="ps-product-category">Healthy Hair Essentials</span><h3>Clarifying Shampoo</h3><p>A cleansing option for occasional product build-up removal.</p><a class="profile-detail-link" href="https://pazzion-stylez-llc.square.site/" target="_blank" rel="noopener">Shop on Square ↗</a></div></article>
 </div>
 <p class="fineprint"><strong>Product claim notice:</strong> Product descriptions are cosmetic/wellness descriptions and are not intended to diagnose, treat, cure or prevent disease.</p>
 </div>
