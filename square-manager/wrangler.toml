@@ -1,0 +1,14 @@
+name = "pazzion-stylez-square-manager"
+main = "src/index.js"
+compatibility_date = "2026-10-21"
+
+[[kv_namespaces]]
+binding = "SQUARE_STATE_KV"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
+
+[[kv_namespaces]]
+binding = "TOKEN_STORE"
+id = "REPLACE_WITH_TOKEN_STORE_KV_NAMESPACE_ID"
+
+[vars]
+SQUARE_REDIRECT_URL = "https://REPLACE-WITH-WORKER-URL/oauth/callback"
