@@ -1,15 +1,16 @@
 # Pages form endpoints — setup notes
 
-These Cloudflare Pages Functions power the website's contact and photo/video release forms. They are source code only until deployed to a Pages project and configured with the required environment variables.
+These Cloudflare Pages Functions power the website's contact and photo/video release forms. The current implementation sends notifications through the Cloudflare Email Sending API; it does not use Resend. Source code alone does not confirm the live Pages deployment or production configuration.
 
 ## Required environment variables
 
-Configure these in the **rebuild / preview Pages project first**, not the current live project:
+Configure these in the Cloudflare Pages project that is intended to serve the site. Test in a separate preview environment before changing production:
 
 - `TURNSTILE_SITE_KEY` — public Cloudflare Turnstile site key for the preview hostname(s).
 - `TURNSTILE_SECRET_KEY` — private Turnstile secret; store as a secret, never in source control.
-- `RESEND_API_KEY` — private Resend API key; store as a secret.
-- `CONTACT_EMAIL` — inbox that should receive website inquiries and photo-release submissions.
+- `CLOUDFLARE_ACCOUNT_ID` — Cloudflare account ID used by the Email Sending API.
+- `CLOUDFLARE_EMAIL_API_TOKEN` — private API token with the required email-sending permission; store as a secret.
+- `FORM_NOTIFICATION_TO` — inbox that should receive website inquiries and photo-release submissions.
 - `FROM_EMAIL` — sender address verified with Resend, for example a verified address at the site's domain.
 
 Do not commit actual secret values to GitHub or place them in HTML/JavaScript. Set production and preview values separately.
@@ -25,7 +26,7 @@ The API reports success only after the email provider accepts the message. The r
 ## Safe rollout checklist
 
 1. Deploy a preview build without changing the current domain, DNS, or live Pages project.
-2. Add the environment variables above to that preview project and verify the sender domain with Resend.
+2. Add the environment variables above to that preview project and confirm the sender address/domain is approved for the Cloudflare Email Sending API.
 3. Use a preview-specific Turnstile widget and keys.
 4. Test valid and invalid contact submissions, declined and consented releases, guardian-required submissions, spam challenges, and email delivery.
 5. Confirm photo-release emails are retained and access-controlled appropriately.
