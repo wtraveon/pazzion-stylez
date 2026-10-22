@@ -459,7 +459,7 @@ if(contactForm){
         throw new Error(result.message||'We could not send your message right now.');
       }
 
-      status.textContent=`Thank you! Your message has been received${result.record_id?` (reference ${result.record_id})`:''}.`;
+      status.textContent=`${result.message||'Thank you! Your message has been received'}${result.record_id?` (reference ${result.record_id})`:''}.`;
       status.classList.add('success');
       contactForm.reset();
       syncPreferredStylist();
@@ -715,7 +715,7 @@ if(photoReleaseForm){
         throw new Error(result.message||'We could not submit the photo release right now.');
       }
 
-      status.textContent=`Thank you. Your photo-release preference has been recorded${result.record_id?` (reference ${result.record_id})`:''}.`;
+      status.textContent=`${result.message||'Thank you. Your photo-release preference has been recorded'}${result.record_id?` (reference ${result.record_id})`:''}.`;
       status.classList.add('success');
       resetReleaseFormState();
     }catch(error){
