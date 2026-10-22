@@ -57,10 +57,10 @@ export async function onRequestPost({ request, env }) {
   }
 
   const today = new Date().toISOString().slice(0, 10);
-  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(signedDate) || signedDate > today) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(signedDate) || signedDate > today) {
     return json({ success: false, message: "Please enter a valid signing date." }, 400);
   }
-  if (serviceDate && !/^\\d{4}-\\d{2}-\\d{2}$/.test(serviceDate)) {
+  if (serviceDate && !/^\d{4}-\d{2}-\d{2}$/.test(serviceDate)) {
     return json({ success: false, message: "Please enter a valid service date." }, 400);
   }
   if (!(await verifyTurnstile(token, request, env))) {
