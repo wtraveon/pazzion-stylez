@@ -1,33 +1,44 @@
-# Pages form endpoints — setup notes
+# Pages form endpoints — preview-first setup
 
-These Cloudflare Pages Functions power the website's contact and photo/video release forms. The current implementation sends notifications through the Cloudflare Email Sending API; it does not use Resend. Source code alone does not confirm the live Pages deployment or production configuration.
+These Cloudflare Pages Functions handle the website contact and photo/video release forms. Contact messages and photo-release records are saved to Cloudflare D1 before notification email is attempted. The code uses the Cloudflare Email Sending API, not Resend. Source code alone does not confirm production deployment or configuration.
 
-## Required environment variables
+## Required preview configuration
 
-Configure these in the Cloudflare Pages project that is intended to serve the site. Test in a separate preview environment before changing production:
+Configure and test a separate Cloudflare Pages preview project before changing production. Do not attach the production custom domain or change live DNS during preview testing.
 
-- `TURNSTILE_SITE_KEY` — public Cloudflare Turnstile site key for the preview hostname(s).
-- `TURNSTILE_SECRET_KEY` — private Turnstile secret; store as a secret, never in source control.
+- `TURNSTILE_SITE_KEY` — public Cloudflare Turnstile site key for the preview hostname.
+- `TURNSTILE_SECRET_KEY` — private Turnstile secret; store as a secret.
 - `CLOUDFLARE_ACCOUNT_ID` — Cloudflare account ID used by the Email Sending API.
 - `CLOUDFLARE_EMAIL_API_TOKEN` — private API token with the required email-sending permission; store as a secret.
-- `FORM_NOTIFICATION_TO` — inbox that should receive website inquiries and photo-release submissions.
-- `FROM_EMAIL` — sender address authorized for use with the Cloudflare Email Sending API, for example an approved address at the site's domain.
+- `FORM_NOTIFICATION_TO` — inbox for website inquiries and photo-release notifications.
+- `FROM_EMAIL` — sender address authorized for use with the Cloudflare Email Sending API.
+- `PHOTO_RELEASES_DB` — D1 database binding (exact binding name) for both contact and photo-release records.
 
-Do not commit actual secret values to GitHub or place them in HTML/JavaScript. Set production and preview values separately.
+Never commit secret values to GitHub or place them in HTML/JavaScript. Keep preview and production configuration separate.
+
+## D1 setup
+
+1. Create a D1 database for the preview environment.
+2. Apply `migrations/0001_photo_release_records.sql` to that database.
+3. Bind the database to the Pages project as `PHOTO_RELEASES_DB`.
+4. Confirm the two tables exist: `photo_release_records` and `contact_messages`.
+5. Limit database access to authorized administrators. Set a written retention/deletion policy and test a backup/export and restore before accepting real releases.
+
+The migration stores the typed signature and guardian details submitted on a photo/video release. Treat these records as confidential personal data. Use fictional records while testing and consider qualified North Carolina legal review of the release wording and retention policy.
 
 ## Endpoints
 
-- `GET /api/form-config` — returns only the public Turnstile site key and whether required Turnstile configuration is present.
-- `POST /api/contact` — validates the contact message, verifies the Turnstile token server-side, then emails the salon inbox.
-- `POST /api/photo-release` — validates the consent fields, verifies Turnstile server-side, then emails the salon inbox.
+- `GET /api/form-config` — returns the public Turnstile site key and whether Turnstile configuration is present.
+- `POST /api/contact` — validates the contact message, verifies Turnstile server-side, saves it to D1, then attempts email notification.
+- `POST /api/photo-release` — validates the consent fields, verifies Turnstile server-side, saves the release to D1, then attempts email notification.
 
-The API reports success only after the email provider accepts the message. The returned reference ID is an email-submission reference, not a database record ID. This version does not create a database or replace the salon's separate retention/back-up process; configure a suitable secure records process for signed releases before relying on these submissions as the sole legal record.
+Both POST endpoints fail closed if D1 is missing or the record cannot be saved. If the email provider is unavailable after a successful save, the endpoint returns the saved record reference and reports that notification failed; the record is not discarded. Notification status is stored separately where possible. The record reference is not an authorization token and there is no public endpoint to retrieve records.
 
-## Safe rollout checklist
+## Preview test checklist
 
-1. Deploy a preview build without changing the current domain, DNS, or live Pages project.
-2. Add the environment variables above to that preview project and confirm the sender address/domain is approved for the Cloudflare Email Sending API.
-3. Use a preview-specific Turnstile widget and keys.
-4. Test valid and invalid contact submissions, declined and consented releases, guardian-required submissions, spam challenges, and email delivery.
-5. Confirm photo-release emails are retained and access-controlled appropriately.
-6. Only after the preview is verified, plan a separate production cutover. Do not change live DNS as part of preview testing.
+1. Deploy this branch only to a separate preview Pages project; do not change production DNS/domain.
+2. Configure preview-specific Turnstile keys, email settings, and the D1 binding.
+3. Test malformed and invalid submissions, a valid contact message, consent and declined releases, under-18 guardian-required submissions, invalid/future signing dates, Turnstile failure, and a missing D1 binding.
+4. Verify records are present in D1 and notification status is accurate for both successful and failed email attempts.
+5. Test database access controls and a backup restore with fictional data.
+6. Review the preview and release language before planning a separate production cutover. Do not accept real releases until storage, access controls, retention, and restore have been verified.
