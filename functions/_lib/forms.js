@@ -13,11 +13,11 @@ export function clean(value, max = 2000) {
 }
 
 export function validEmail(value) {
-  return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(value);
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
 export function validPhone(value) {
-  return !value || /^[+()\\d.\\s-]{7,25}$/.test(value);
+  return !value || /^[+()\d.\s-]{7,25}$/.test(value);
 }
 
 export function escapeHtml(value) {
