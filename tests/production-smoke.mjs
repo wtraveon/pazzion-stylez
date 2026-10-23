@@ -44,7 +44,7 @@ assert.ok(robots.includes("Disallow: /api/"), "Live robots.txt should disallow A
 assert.ok(robots.includes("Sitemap: https://pazzionstylez.com/sitemap.xml"), "Live robots.txt should point to the production sitemap");
 
 const sitemap = await getText("/sitemap.xml");
-const sitemapUrls = [...sitemap.matchAll(/<loc>([^<]+)<\\/loc>/g)].map(([, url]) => url.trim());
+const sitemapUrls = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(([, url]) => url.trim());
 assert.ok(sitemapUrls.includes("https://pazzionstylez.com/"), "Live sitemap should include the canonical homepage");
 assert.ok(sitemapUrls.length > 0, "Live sitemap should contain at least one URL");
 assert.equal(new Set(sitemapUrls).size, sitemapUrls.length, "Live sitemap should not contain duplicate URLs");
