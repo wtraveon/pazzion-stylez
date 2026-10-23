@@ -28,9 +28,9 @@ Examples of currently unreferenced assets include:
 
 ## Production validation status — 2026-10-23
 
-The production smoke workflow passed on commit `d5ac7312b6a742232803af445cfd95a3f32d3379` on 2026-10-23. The latest run verifies live homepage and Products page guidance, sitemap pages and metadata, security headers, booking script preselection, stylist contact links, published Square booking routes for all three stylists and both client-status keys, Square endpoint reachability, Turnstile configuration, and invalid-payload handling for the contact and photo-release APIs. It also checks that the homepage, privacy page, and photo-release page use consistent script cache versions. The live Products hero CTA was confirmed as **Browse Square store**. Both the website-integrity workflow and production-smoke workflow passed on this commit.
+The production smoke workflow passed on commit `e3d8063716b77a7d7a0eaf3c1942be81649275ea` on 2026-10-23. The workflow now asserts that the live homepage and JahNiqua profile describe the current Square booking flow, in addition to the checks below. The latest run verifies live homepage and Products page guidance, sitemap pages and metadata, security headers, booking script preselection, stylist contact links, all six published Square booking routes (new and returning clients for all three stylists), Square endpoint reachability, Turnstile configuration, and invalid-payload handling for the contact and photo-release APIs. It also checks that the homepage, privacy page, and photo-release page use consistent script cache versions. The live Products hero CTA was confirmed as **Browse Square store**. Both the website-integrity workflow and production-smoke workflow passed on this commit.
 
-The following still need manual or real-browser validation:
+Square returned HTTP 429 for some automated endpoint requests in the latest passing run; the test treats non-404/410 responses below HTTP 500 as reachability, not proof that a customer can complete booking. The following still need manual or real-browser validation:
 
 - Review desktop and mobile rendering and inspect browser console/network errors.
 - Complete a real browser booking flow for each Square route. Automated reachability does not prove a route's full booking experience, especially if Square rate-limits automated requests.
