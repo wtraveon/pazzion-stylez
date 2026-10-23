@@ -426,19 +426,25 @@ if(contactForm){
       return;
     }
 
+    // Lock the submit control before awaiting protection initialization to
+    // prevent rapid clicks/Enter presses from sending duplicate messages.
+    submitButton.disabled=true;
+    submitButton.setAttribute('aria-disabled','true');
     if(!(await ensureProtectionReady())){
       status.textContent=protectionMessage();
       status.classList.add('error');
+      submitButton.disabled=false;
+      submitButton.removeAttribute('aria-disabled');
       return;
     }
     if(!formProtection.tokens.contact){
       status.textContent=protectionMessage();
       status.classList.add('error');
+      submitButton.disabled=false;
+      submitButton.removeAttribute('aria-disabled');
       return;
     }
 
-    submitButton.disabled=true;
-    submitButton.setAttribute('aria-disabled','true');
     contactForm.setAttribute('aria-busy','true');
     status.textContent='Sending your message…';
 
@@ -668,19 +674,25 @@ if(photoReleaseForm){
       }
     }
 
+    // Lock the submit control before awaiting protection initialization to
+    // prevent rapid clicks/Enter presses from sending duplicate releases.
+    submitButton.disabled=true;
+    submitButton.setAttribute('aria-disabled','true');
     if(!(await ensureProtectionReady())){
       status.textContent=protectionMessage();
       status.classList.add('error');
+      submitButton.disabled=false;
+      submitButton.removeAttribute('aria-disabled');
       return;
     }
     if(!formProtection.tokens.photoRelease){
       status.textContent=protectionMessage();
       status.classList.add('error');
+      submitButton.disabled=false;
+      submitButton.removeAttribute('aria-disabled');
       return;
     }
 
-    submitButton.disabled=true;
-    submitButton.setAttribute('aria-disabled','true');
     photoReleaseForm.setAttribute('aria-busy','true');
     status.textContent='Submitting your photo-release preference…';
 
