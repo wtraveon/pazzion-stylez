@@ -33,8 +33,10 @@ assert.match(homepage, /Browse the general Pazzion Stylez Square storefront and 
 assert.doesNotMatch(homepage, /Pickup and shipping options are shown during checkout/i,
   "Live homepage must not promise unverified Square checkout options");
 const productPage = await getText("/products/");
-assert.match(productPage, />Browse Square store</i,
-  "Live product hero CTA must describe the general Square storefront accurately");
+assert.match(productPage, /<div class="hero-actions">[\\s\\S]*?<a class="btn btn-primary"[^>]*>Browse Square store<\\/a>/i,
+  "Live product hero CTA must use the accurate general-storefront label");
+assert.doesNotMatch(productPage.match(/<div class="hero-actions">[\\s\\S]*?<\\/div>/i)?.[0] || "", /Shop Available Products/i,
+  "Live product hero must not show the outdated Shop Available Products label");
 assert.match(productPage, /Product links open the general Square storefront, not individual product pages/i,
   "Live product page must clarify that product links do not open individual product listings");
 assert.match(homepage, /href=["']\/?\?stylist=jahniqua#booking["'][^>]*>Request Appointment with Jah/i,
