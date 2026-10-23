@@ -124,3 +124,21 @@ test("sitemap URLs point to tracked HTML pages", async () => {
   }
   assert.deepEqual(missing, [], `Invalid sitemap entries:\n${missing.join("\n")}`);
 });
+
+test("deployment security headers and robots sitemap declaration stay configured", async () => {
+  const headers = await readFile(path.join(root, "_headers"), "utf8");
+  const requiredHeaders = [
+    "X-Content-Type-Options: nosniff",
+    "X-Frame-Options: DENY",
+    "Referrer-Policy: strict-origin-when-cross-origin",
+    "Strict-Transport-Security: max-age=31536000"
+  ];
+  for (const header of requiredHeaders) {
+    assert.ok(headers.includes(header), `Missing deployment security header: ${header}`);
+  }
+
+  const robots = await readFile(path.join(root, "robots.txt"), "utf8");
+  assert.match(robots, /^User-agent:\\s*\\*/m, "robots.txt should define rules for all crawlers");
+  assert.match(robots, /^Disallow:\\s*\\/api\\//m, "robots.txt should keep API endpoints out of crawler discovery");
+  assert.match(robots, /^Sitemap:\\s*https:\\/\\/pazzionstylez\\.com\\/sitemap\\.xml\\s*$/m, "robots.txt should declare the production sitemap");
+});
