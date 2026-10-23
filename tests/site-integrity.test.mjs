@@ -26,6 +26,8 @@ test("JahNiqua is selectable in booking and has a working direct-contact fallbac
   const script = await readFile(path.join(root, "script.js"), "utf8");
   const routes = await readFile(path.join(root, "booking-routes.js"), "utf8");
 
+  assert.match(homepage, /href="\/?\?stylist=jahniqua#booking">Request Appointment with Jah/i,
+    "JahNiqua's homepage team card should lead to her preselected appointment request");
   assert.match(homepage, /data-stylist="jahniqua"/i,
     "JahNiqua should be a selectable stylist in the booking section");
   assert.match(homepage, /id="jahniquaBookingContact"/i,
