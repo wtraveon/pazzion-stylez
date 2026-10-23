@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  clean, validEmail, validDate, validPhone, escapeHtml, emailHtml, readJson, methodNotAllowed
+  clean, validEmail, validDate, validPhone, escapeHtml, emailHtml, readJson, methodNotAllowed, verifyTurnstile, sendEmail
 } from "../functions/_lib/forms.js";
 
 test("clean trims strings and caps their length", () => {
@@ -87,4 +87,55 @@ test("methodNotAllowed responds with 405 and an Allow header", () => {
   const response = methodNotAllowed();
   assert.equal(response.status, 405);
   assert.equal(response.headers.get("Allow"), "POST");
+});
+
+
+test("verifyTurnstile requires the expected hostname and action", async () => {
+  const originalFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async () => new Response(JSON.stringify({
+      success: true, hostname: "pazzionstylez.com", action: "contact"
+    }), { status: 200 });
+    const request = new Request("https://pazzionstylez.com/api/contact", { method: "POST" });
+    const env = { TURNSTILE_SITE_KEY: "site-key", TURNSTILE_SECRET_KEY: "secret" };
+    assert.equal(await verifyTurnstile("token", request, env, "contact"), true);
+    assert.equal(await verifyTurnstile("token", request, env, "photo_release"), false);
+
+    globalThis.fetch = async () => new Response(JSON.stringify({
+      success: true, hostname: "attacker.example", action: "contact"
+    }), { status: 200 });
+    assert.equal(await verifyTurnstile("token", request, env, "contact"), false);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("verifyTurnstile fails closed when token or configuration is missing", async () => {
+  const request = new Request("https://pazzionstylez.com/api/contact", { method: "POST" });
+  assert.equal(await verifyTurnstile("", request, {}, "contact"), false);
+});
+
+test("sendEmail sanitizes subject newlines and reports provider success", async () => {
+  const originalFetch = globalThis.fetch;
+  let captured;
+  try {
+    globalThis.fetch = async (url, options) => {
+      captured = { url: String(url), options, body: JSON.parse(options.body) };
+      return new Response(JSON.stringify({ success: true, result: { message_id: "msg-1" } }), { status: 200 });
+    };
+    const result = await sendEmail({
+      CLOUDFLARE_ACCOUNT_ID: "account",
+      CLOUDFLARE_EMAIL_API_TOKEN: "token",
+      FORM_NOTIFICATION_TO: "salon@example.com",
+      FROM_EMAIL: "website@example.com"
+    }, "Hello\\r\\nBcc: attacker@example.com", "<p>Message</p>", "client@example.com");
+
+    assert.equal(result.ok, true);
+    assert.equal(result.id, "msg-1");
+    assert.equal(captured.body.subject, "Hello Bcc: attacker@example.com");
+    assert.equal(captured.body.reply_to, "client@example.com");
+    assert.deepEqual(captured.body.to, ["salon@example.com"]);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });
