@@ -92,7 +92,7 @@ test("pages that load styles.css use the same cache-busting version", async () =
   const versions = new Map();
   for (const file of htmlFiles) {
     const html = await readFile(file, "utf8");
-    for (const match of html.matchAll(/<link\\b[^>]*\\bhref=["']([^"']*styles\.css(?:\\?[^"']*)?)["'][^>]*>/gi)) {
+    for (const match of html.matchAll(/<link\b[^>]*\bhref=["']([^"']*styles\.css(?:\?[^"']*)?)["'][^>]*>/gi)) {
       const url = match[1];
       const version = new URL(url, "https://pazzionstylez.com/").searchParams.get("v");
       versions.set(path.relative(root, file), version || "(missing)");
@@ -122,5 +122,5 @@ test("sitemap URLs point to tracked HTML pages", async () => {
       missing.push(`missing HTML page: ${fullUrl} -> ${path.relative(root, target)}`);
     }
   }
-  assert.deepEqual(missing, [], `Invalid sitemap entries:\\n${missing.join("\\n")}`);
+  assert.deepEqual(missing, [], `Invalid sitemap entries:\n${missing.join("\n")}`);
 });
