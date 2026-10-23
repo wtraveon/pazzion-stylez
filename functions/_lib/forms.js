@@ -26,7 +26,10 @@ export function validDate(value) {
 }
 
 export function validPhone(value) {
-  return !value || /^[+()\d.\s-]{7,25}$/.test(value);
+  if (!value) return true;
+  if (!/^[+()\d.\s-]{7,25}$/.test(value)) return false;
+  const digits = value.replace(/\D/g, "");
+  return digits.length >= 7 && digits.length <= 15;
 }
 
 export function escapeHtml(value) {
