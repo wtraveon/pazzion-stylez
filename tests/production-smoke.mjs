@@ -70,22 +70,31 @@ assert.equal(routes.size, 4, "Unexpected number of online Square booking routes"
 // challenge automated clients (403/429); those statuses still prove the host
 // was reached. A missing route or server failure is treated as a real failure.
 const squareResults = await Promise.all([...routes.entries()].map(async ([key, url]) => {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const response = await fetch(url, {
-      redirect: "follow",
-      signal: controller.signal,
-      headers: { "user-agent": "Mozilla/5.0 (compatible; PazzionStylez-ProductionSmoke/1.0)" }
-    });
-    assert.ok(
-      ![404, 410].includes(response.status) && response.status < 500,
-      `Square route ${key} returned HTTP ${response.status}: ${url}`
-    );
-    return { key, status: response.status };
-  } finally {
-    clearTimeout(timer);
+  let lastError;
+  // Square occasionally stalls or challenges automated clients. Retry transient
+  // network/timeout failures once so one flaky endpoint does not abort all checks.
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const response = await fetch(url, {
+        redirect: "follow",
+        signal: controller.signal,
+        headers: { "user-agent": "Mozilla/5.0 (compatible; PazzionStylez-ProductionSmoke/1.0)" }
+      });
+      assert.ok(
+        ![404, 410].includes(response.status) && response.status < 500,
+        `Square route ${key} returned HTTP ${response.status}: ${url}`
+      );
+      return { key, status: response.status, attempt };
+    } catch (error) {
+      lastError = error;
+      if (attempt === 2) break;
+    } finally {
+      clearTimeout(timer);
+    }
   }
+  throw new Error(`Square route ${key} failed after 2 attempts: ${lastError?.name || "network error"}: ${url}`);
 }));
 console.log("Square endpoint reachability:", squareResults.map(({ key, status }) => `${key}=${status}`).join(", "));
 
