@@ -52,11 +52,9 @@ function selectBookingStylist(key,{focusStep=true}={}){
   if(!['latoya','kottia','jahniqua'].includes(key)) return;
   selectedStylist=key;
   stylistButtons.forEach(button=>button.setAttribute('aria-pressed',button.dataset.stylist===key?'true':'false'));
-  if(selectedStylistSummary) selectedStylistSummary.textContent=key==='jahniqua'
-    ? 'You selected JahNiqua Speight. Contact her directly to arrange an appointment.'
-    : `You selected ${stylistDisplayName(key)}.`;
-  if(clientStatusGrid){clientStatusGrid.hidden=key==='jahniqua';clientStatusGrid.style.display=key==='jahniqua'?'none':'';}
-  if(jahniquaBookingContact) jahniquaBookingContact.hidden=key!=='jahniqua';
+  if(selectedStylistSummary) selectedStylistSummary.textContent=`You selected ${stylistDisplayName(key)}.`;
+  if(clientStatusGrid){clientStatusGrid.hidden=false;clientStatusGrid.style.display='';}
+  if(jahniquaBookingContact) jahniquaBookingContact.hidden=true;
   if(bookingStatusStep){bookingStatusStep.hidden=false;if(focusStep) bookingStatusStep.focus();}
   if(bookingStatusMessage) bookingStatusMessage.textContent='';
 }
