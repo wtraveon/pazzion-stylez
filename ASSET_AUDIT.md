@@ -10,8 +10,10 @@
 - **56** tracked files under `assets/`.
 - **32** distinct local image/media paths referenced by HTML.
 - **0** referenced image/media paths missing from the tracked repository.
+- **371** local links checked across the HTML pages; **0** broken local targets found.
+- **0** duplicate HTML IDs found.
 
-The previous 2026-10-15 audit stated that the repository had no `assets/` directory. That finding is stale: the assets are now present. This scan checks references in HTML attributes (`src`, `href`, and `content`) against the recursive Git tree. It does not check CSS URLs, runtime-generated URLs, live HTTP status, browser rendering, or image visual correctness.
+The previous 2026-10-15 audit stated that the repository had no `assets/` directory. That finding is stale: the assets are now present. This scan checks references in HTML attributes (`src`, `href`, and `content`) against the recursive Git tree. The same source scan checked 371 relative/local links and duplicate IDs across the 16 HTML pages. It does not check CSS URLs, runtime-generated URLs, live HTTP status, browser rendering, JavaScript behavior, external links, or image visual correctness.
 
 ## Follow-up review
 
