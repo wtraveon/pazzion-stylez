@@ -1,8 +1,10 @@
 # Repository Asset Audit
 
-**Audit date:** 2026-10-23  
-**Branch scanned:** `main`  
-**Commit scanned:** `942979878b4eaf0883131b2d09fa3a5f02540297`
+**Baseline audit date:** 2026-10-23  
+**Baseline branch:** `main`  
+**Baseline commit scanned:** `942979878b4eaf0883131b2d09fa3a5f02540297`
+
+> The counts below are a snapshot from the baseline commit, not a claim that the current branch has identical file counts. The current `main` branch also runs `tests/site-integrity.test.mjs` in GitHub Actions to check every tracked HTML page for duplicate IDs, missing local static assets, and consistent cache-busting for `script.js`. The automated check passed on commit `9fc538b492258054d7d5a80c79af41eb349b0c8d`.
 
 ## Result
 
