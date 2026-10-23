@@ -4,7 +4,7 @@
 **Baseline branch:** `main`  
 **Baseline commit scanned:** `942979878b4eaf0883131b2d09fa3a5f02540297`
 
-> The counts below are a snapshot from the baseline commit, not a claim that the current branch has identical file counts. The current `main` branch runs `tests/site-integrity.test.mjs` in GitHub Actions. It checks tracked HTML pages for duplicate IDs and missing local static assets, consistent cache-busting versions for both `script.js` and `styles.css`, and sitemap URL uniqueness and tracked-page targets. These checks passed on commit `c54ced45798b5e8e81b432e47a48a25731075fe5` on 2026-10-23.
+> The counts below are a snapshot from the baseline commit, not a claim that the current branch has identical file counts. The current `main` branch runs `tests/site-integrity.test.mjs` in GitHub Actions. It checks tracked HTML pages for duplicate IDs and missing local static assets, consistent cache-busting versions for both `script.js` and `styles.css`, and sitemap URL uniqueness and tracked-page targets. These checks passed on commit `d5ac7312b6a742232803af445cfd95a3f32d3379` on 2026-10-23.
 
 ## Result
 
@@ -28,7 +28,7 @@ Examples of currently unreferenced assets include:
 
 ## Production validation status — 2026-10-23
 
-The production smoke workflow passed on commit `c54ced45798b5e8e81b432e47a48a25731075fe5`. It verified the live homepage and Products page guidance, sitemap pages and metadata, security headers, published booking-route mappings, Square endpoint reachability, Turnstile configuration, and invalid-payload handling for the contact and photo-release APIs. The live Products hero CTA was confirmed as **Browse Square store**.
+The production smoke workflow passed on commit `d5ac7312b6a742232803af445cfd95a3f32d3379` on 2026-10-23. The latest run verifies live homepage and Products page guidance, sitemap pages and metadata, security headers, booking script preselection, stylist contact links, published Square booking routes for all three stylists and both client-status keys, Square endpoint reachability, Turnstile configuration, and invalid-payload handling for the contact and photo-release APIs. It also checks that the homepage, privacy page, and photo-release page use consistent script cache versions. The live Products hero CTA was confirmed as **Browse Square store**. Both the website-integrity workflow and production-smoke workflow passed on this commit.
 
 The following still need manual or real-browser validation:
 
