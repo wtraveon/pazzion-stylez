@@ -33,7 +33,7 @@ export async function onRequestPost({ request, env }) {
   if (!validPhone(phone) || !validPhone(guardianPhone)) {
     return json({ success: false, message: "Please enter a valid phone number." }, 400);
   }
-  if (!["LaToya Terry", "Kottia Cotton", "Other / not sure"].includes(provider)) {
+  if (!["LaToya Terry", "Kottia Cotton", "JahNiqua Speight", "Other / not sure"].includes(provider)) {
     return json({ success: false, message: "Please choose a valid service provider." }, 400);
   }
   if (!["I CONSENT to selected photo/video uses", "I DO NOT CONSENT to public photo/video use"].includes(permission)) {
