@@ -139,3 +139,28 @@ test("sendEmail sanitizes subject newlines and reports provider success", async 
     globalThis.fetch = originalFetch;
   }
 });
+
+
+test("sendEmail fails safely when required configuration is missing", async () => {
+  const result = await sendEmail({}, "Subject", "<p>Body</p>");
+  assert.deepEqual(result, { ok: false, configurationError: true });
+});
+
+test("sendEmail reports provider rejection without exposing provider details", async () => {
+  const originalFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async () => new Response(JSON.stringify({
+      success: false,
+      errors: [{ code: 1000, message: "Sensitive provider detail" }]
+    }), { status: 400 });
+    const result = await sendEmail({
+      CLOUDFLARE_ACCOUNT_ID: "account",
+      CLOUDFLARE_EMAIL_API_TOKEN: "token",
+      FORM_NOTIFICATION_TO: "salon@example.com",
+      FROM_EMAIL: "website@example.com"
+    }, "Subject", "<p>Body</p>");
+    assert.deepEqual(result, { ok: false, id: null });
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
