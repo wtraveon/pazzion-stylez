@@ -441,16 +441,16 @@ test("homepage JSON-LD structured data parses as valid JSON", async () => {
 
 test("homepage product section accurately describes general Square storefront links", async () => {
   const homepage = await readFile(path.join(root, "index.html"), "utf8");
-  const tiles = [...homepage.matchAll(/<article class="product-card ps-home-product">([\\s\\S]*?)<\\/article>/gi)].map(([, tile]) => tile);
+  const tiles = [...homepage.matchAll(/<article class="product-card ps-home-product">([\s\S]*?)<\/article>/gi)].map(([, tile]) => tile);
   assert.equal(tiles.length, 11, "Expected eleven homepage product tiles");
   for (const tile of tiles) {
-    assert.match(tile, />Browse Square store ↗<\\/a>/i,
+    assert.match(tile, />Browse Square store ↗<\/a>/i,
       "Homepage product links should describe the general Square storefront");
   }
   assert.match(homepage, /Product cards open the general Square storefront/i,
     "Homepage should explain that product links open the general storefront");
   assert.match(homepage, /not a product-specific checkout page/i,
     "Homepage should disclose that product cards are not item-specific checkout links");
-  assert.doesNotMatch(homepage, /Select products are available in 4 oz, 8 oz and 16 oz sizes, with current pricing ranging from \\$5–\\$20/i,
+  assert.doesNotMatch(homepage, /Select products are available in 4 oz, 8 oz and 16 oz sizes, with current pricing ranging from \$5–\$20/i,
     "Homepage must not state unverified product sizes and prices");
 });
