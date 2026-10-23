@@ -4,7 +4,7 @@
 **Baseline branch:** `main`  
 **Baseline commit scanned:** `942979878b4eaf0883131b2d09fa3a5f02540297`
 
-> The counts below are a snapshot from the baseline commit, not a claim that the current branch has identical file counts. The current `main` branch runs `tests/site-integrity.test.mjs` in GitHub Actions. It checks tracked HTML pages for duplicate IDs and missing local static assets, consistent cache-busting versions for both `script.js` and `styles.css`, and sitemap URL uniqueness and tracked-page targets. The latest check passed on commit `4d919238befbbaca9778b6d7189d510f8f573aa4`.
+> The counts below are a snapshot from the baseline commit, not a claim that the current branch has identical file counts. The current `main` branch runs `tests/site-integrity.test.mjs` in GitHub Actions. It checks tracked HTML pages for duplicate IDs and missing local static assets, consistent cache-busting versions for both `script.js` and `styles.css`, and sitemap URL uniqueness and tracked-page targets. These checks passed on commit `c54ced45798b5e8e81b432e47a48a25731075fe5` on 2026-10-23.
 
 ## Result
 
@@ -26,12 +26,14 @@ Examples of currently unreferenced assets include:
 - Older product image variants such as `assets/images/products/beard-oil.webp` and `assets/images/products/scalp-treatment.webp`.
 - Gallery uploads such as `assets/images/gallery/image44.jpeg`.
 
-## Production validation still required
+## Production validation status — 2026-10-23
 
-- Confirm each referenced asset returns HTTP 200 from the live domain.
-- Compare the live deployed homepage and policy pages with the current `main` branch; indexed/search-cached copies may lag.
-- Check desktop and mobile rendering and inspect browser console/network errors.
-- Test booking links end-to-end with real Square pages.
-- Test contact and photo-release forms in the deployed Cloudflare Pages runtime with correctly configured environment variables and test inbox delivery.
+The production smoke workflow passed on commit `c54ced45798b5e8e81b432e47a48a25731075fe5`. It verified the live homepage and Products page guidance, sitemap pages and metadata, security headers, published booking-route mappings, Square endpoint reachability, Turnstile configuration, and invalid-payload handling for the contact and photo-release APIs. The live Products hero CTA was confirmed as **Browse Square store**.
 
-A clean tracked asset-path audit is not proof of a successful production deployment or end-to-end site health.
+The following still need manual or real-browser validation:
+
+- Review desktop and mobile rendering and inspect browser console/network errors.
+- Complete a real browser booking flow for each Square route. Automated reachability does not prove a route's full booking experience, especially if Square rate-limits automated requests.
+- Submit a consented test contact and photo-release form in the deployed Cloudflare Pages runtime and confirm notification email delivery.
+
+A clean static audit and passing production smoke checks improve confidence but do not prove every browser interaction or email delivery path works end to end.
