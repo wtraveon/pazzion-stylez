@@ -128,7 +128,7 @@ test("sendEmail sanitizes subject newlines and reports provider success", async 
       CLOUDFLARE_EMAIL_API_TOKEN: "token",
       FORM_NOTIFICATION_TO: "salon@example.com",
       FROM_EMAIL: "website@example.com"
-    }, "Hello\\r\\nBcc: attacker@example.com", "<p>Message</p>", "client@example.com");
+    }, "Hello\r\nBcc: attacker@example.com", "<p>Message</p>", "client@example.com");
 
     assert.equal(result.ok, true);
     assert.equal(result.id, "msg-1");
