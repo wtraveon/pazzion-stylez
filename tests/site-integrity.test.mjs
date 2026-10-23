@@ -469,6 +469,8 @@ test("every product listing uses its fitted product image", async () => {
   assert.ok(tiles.length > 0, "Product page should contain product tiles");
   const invalid = tiles.filter(tile => !tile.name || !tile.image || !/-frame\.(?:jpe?g|webp|png)$/i.test(tile.image) || !tile.alt?.trim());
   assert.deepEqual(invalid, [], "Each product tile must have a name, descriptive alt text, and fitted -frame image: " + JSON.stringify(invalid));
+  const mismatchedAlt = tiles.filter(tile => !tile.alt.toLowerCase().includes(tile.name.toLowerCase()));
+  assert.deepEqual(mismatchedAlt, [], "Each product image alt text should identify its matching product: " + JSON.stringify(mismatchedAlt));
   const duplicateImages = tiles.filter((tile, index) => tiles.findIndex(other => other.image === tile.image) !== index);
   assert.deepEqual(duplicateImages, [], "Each product listing should use its own fitted image: " + JSON.stringify(duplicateImages));
 });
