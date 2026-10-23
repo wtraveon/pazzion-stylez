@@ -18,6 +18,9 @@ export async function onRequestPost({ request, env }) {
   if (!name || !topic || !message || (!email && !phone)) {
     return json({ success: false, message: "Please complete your name, topic, message, and an email address or phone number." }, 400);
   }
+  if (!["Hair or beauty service", "Product order", "Class or education", "Future academy interest", "General question"].includes(topic)) {
+    return json({ success: false, message: "Please choose a valid inquiry topic." }, 400);
+  }
   if (email && !validEmail(email)) return json({ success: false, message: "Please enter a valid email address." }, 400);
   if (!validPhone(phone)) return json({ success: false, message: "Please enter a valid phone number." }, 400);
   if (topic === "Hair or beauty service" && !["LaToya Terry", "Kottia Cotton", "JahNiqua Speight"].includes(preferred)) {
