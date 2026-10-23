@@ -292,8 +292,13 @@ async function initFormProtection(){
     if(!window.turnstile) throw new Error('Turnstile API unavailable');
 
     formProtection.sitekey=config.sitekey;
-    renderProtectionWidget('contact','contactTurnstileWrap','contactTurnstile','contact',config.sitekey);
-    renderProtectionWidget('photoRelease','photoReleaseTurnstileWrap','photoReleaseTurnstile','photo_release',config.sitekey);
+    // Forms live on separate pages; only initialize widgets present on this page.
+    if(document.getElementById('contactForm')){
+      renderProtectionWidget('contact','contactTurnstileWrap','contactTurnstile','contact',config.sitekey);
+    }
+    if(document.getElementById('photoReleaseForm')){
+      renderProtectionWidget('photoRelease','photoReleaseTurnstileWrap','photoReleaseTurnstile','photo_release',config.sitekey);
+    }
     formProtection.mode='ready';
   }catch{
     formProtection.mode='error';
