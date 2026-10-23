@@ -99,7 +99,7 @@ export async function sendEmail(env, subject, html, replyTo) {
         body: JSON.stringify({
           from: env.FROM_EMAIL,
           to: [env.FORM_NOTIFICATION_TO],
-          subject,
+          subject: clean(subject, 200).replace(/[\\r\\n\\t]+/g, " "),
           html,
           ...(replyTo ? { reply_to: replyTo } : {})
         }),
