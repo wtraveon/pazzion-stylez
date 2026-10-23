@@ -62,21 +62,21 @@ test("visible form controls have accessible labels", async () => {
   const problems = [];
   for (const file of htmlFiles) {
     const html = await readFile(file, "utf8");
-    const labels = [...html.matchAll(/<label\\b[^>]*>[\\s\\S]*?<\\/label>/gi)].map(match => match[0]);
+    const labels = [...html.matchAll(/<label\b[^>]*>[\s\S]*?<\/label>/gi)].map(match => match[0]);
     const labelTargets = new Set(
-      [...html.matchAll(/<label\\b[^>]*\\bfor=["']([^"']+)["'][^>]*>/gi)].map(match => match[1])
+      [...html.matchAll(/<label\b[^>]*\bfor=["']([^"']+)["'][^>]*>/gi)].map(match => match[1])
     );
-    for (const match of html.matchAll(/<(input|select|textarea)\\b[^>]*>/gi)) {
+    for (const match of html.matchAll(/<(input|select|textarea)\b[^>]*>/gi)) {
       const tag = match[0];
-      if (/\\btype=["']hidden["']/i.test(tag) || /\\baria-hidden=["']true["']/i.test(tag)) continue;
-      const id = tag.match(/\\bid=["']([^"']+)["']/i)?.[1];
+      if (/\btype=["']hidden["']/i.test(tag) || /\baria-hidden=["']true["']/i.test(tag)) continue;
+      const id = tag.match(/\bid=["']([^"']+)["']/i)?.[1];
       const wrappedByLabel = labels.some(label => label.includes(tag));
       if (!(id && labelTargets.has(id)) && !wrappedByLabel) {
         problems.push(`${path.relative(root, file)}: ${tag.slice(0, 160)}`);
       }
     }
   }
-  assert.deepEqual(problems, [], `Form controls missing accessible labels:\\n${problems.join("\\n")}`);
+  assert.deepEqual(problems, [], `Form controls missing accessible labels:\n${problems.join("\n")}`);
 });
 
 test("HTML pages have unique IDs", async () => {
