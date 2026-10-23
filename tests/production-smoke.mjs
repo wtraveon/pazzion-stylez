@@ -32,9 +32,21 @@ assert.match(homepage, /href=["']\/?\?stylist=jahniqua#booking["'][^>]*>Request 
   "Live homepage should expose JahNiqua's preselected appointment request path");
 assert.match(homepage, /data-stylist=["']jahniqua["']/i,
   "Live homepage should include JahNiqua in stylist selection");
+assert.match(homepage, /href=["']tel:\+12523159963["']/i,
+  "Live homepage should expose JahNiqua's direct call option");
+assert.match(homepage, /href=["']sms:\+12523159963["']/i,
+  "Live homepage should expose JahNiqua's direct text option");
+assert.match(homepage, /href=["']mailto:jspeight13@yahoo\.com["']/i,
+  "Live homepage should expose JahNiqua's direct email option");
 const jahProfile = await getText("/team/jahniqua-speight/");
 assert.match(jahProfile, /href=["']\/?\?stylist=jahniqua#booking["'][^>]*>Request Appointment/i,
   "Live JahNiqua profile should link to her appointment request path");
+assert.match(jahProfile, /href=["']tel:\+12523159963["']/i,
+  "Live JahNiqua profile should expose her call option");
+assert.match(jahProfile, /href=["']sms:\+12523159963["']/i,
+  "Live JahNiqua profile should expose her text option");
+assert.match(jahProfile, /href=["']mailto:jspeight13@yahoo\.com["']/i,
+  "Live JahNiqua profile should expose her email option");
 const bookingScript = await getText("/script.js?v=20261023-1638");
 assert.match(bookingScript, /new URLSearchParams\(window\.location\.search\)\.get\('stylist'\)/,
   "Live booking script should support stylist preselection from profile links");
