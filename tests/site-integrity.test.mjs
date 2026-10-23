@@ -505,3 +505,14 @@ test("local CSS url() assets resolve to existing files", async () => {
   }
   assert.deepEqual(broken, [], "Broken local CSS url() assets:\n" + broken.join("\n"));
 });
+
+
+test("photo-release form and API both support every current stylist", async () => {
+  const releasePage = await readFile(path.join(root, "photo-release", "index.html"), "utf8");
+  const releaseApi = await readFile(path.join(root, "functions", "api", "photo-release.js"), "utf8");
+  const providerSelect = releasePage.match(/<select\b[^>]*name=["']service_provider["'][\s\S]*?<\/select>/i)?.[0] || "";
+  for (const stylist of ["LaToya Terry", "Kottia Cotton", "JahNiqua Speight"]) {
+    assert.ok(providerSelect.includes('value="' + stylist + '"'), "Photo-release form should offer " + stylist);
+    assert.ok(releaseApi.includes('"' + stylist + '"'), "Photo-release API should accept " + stylist);
+  }
+});
