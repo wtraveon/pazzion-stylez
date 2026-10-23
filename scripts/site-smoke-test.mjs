@@ -98,7 +98,7 @@ try {
     if (!routes.includes(`'${key}'`)) fail(`booking-routes.js: missing route key ${key}.`);
   }
   for (const url of routes.matchAll(/['"](https?:\/\/[^'"]+)['"]/g)) {
-    if (!/square\.com\//i.test(url[1])) fail(`booking-routes.js: unexpected booking host ${url[1]}.`);
+    if (!/square(?:up)?\.com\//i.test(url[1])) fail(`booking-routes.js: unexpected booking host ${url[1]}.`);
   }
 } catch { fail('booking-routes.js is missing or unreadable.'); }
 
