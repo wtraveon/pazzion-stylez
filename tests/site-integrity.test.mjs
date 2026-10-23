@@ -460,14 +460,14 @@ test("homepage product section accurately describes general Square storefront li
 
 test("every product listing uses its fitted product image", async () => {
   const productPage = await readFile(path.join(root, "products", "index.html"), "utf8");
-  const tiles = [...productPage.matchAll(/<article\\b[^>]*class=["'][^"']*\\bps-product-tile\\b[^"']*["'][^>]*>[\\s\\S]*?<\\/article>/gi)]
+  const tiles = [...productPage.matchAll(/<article\b[^>]*class=["'][^"']*\bps-product-tile\b[^"']*["'][^>]*>[\s\S]*?<\/article>/gi)]
     .map(([html]) => ({
-      name: html.match(/<h3\\b[^>]*>([\\s\\S]*?)<\\/h3>/i)?.[1]?.replace(/<[^>]+>/g, "").trim(),
-      image: html.match(/<img\\b[^>]*\\bsrc=["']([^"']+)["'][^>]*>/i)?.[1],
-      alt: html.match(/<img\\b[^>]*\\balt=["']([^"']*)["'][^>]*>/i)?.[1]
+      name: html.match(/<h3\b[^>]*>([\s\S]*?)<\/h3>/i)?.[1]?.replace(/<[^>]+>/g, "").trim(),
+      image: html.match(/<img\b[^>]*\bsrc=["']([^"']+)["'][^>]*>/i)?.[1],
+      alt: html.match(/<img\b[^>]*\balt=["']([^"']*)["'][^>]*>/i)?.[1]
     }));
   assert.ok(tiles.length > 0, "Product page should contain product tiles");
-  const invalid = tiles.filter(tile => !tile.name || !tile.image || !/-frame\\.(?:jpe?g|webp|png)$/i.test(tile.image) || !tile.alt?.trim());
+  const invalid = tiles.filter(tile => !tile.name || !tile.image || !/-frame\.(?:jpe?g|webp|png)$/i.test(tile.image) || !tile.alt?.trim());
   assert.deepEqual(invalid, [], "Each product tile must have a name, descriptive alt text, and fitted -frame image: " + JSON.stringify(invalid));
   const duplicateImages = tiles.filter((tile, index) => tiles.findIndex(other => other.image === tile.image) !== index);
   assert.deepEqual(duplicateImages, [], "Each product listing should use its own fitted image: " + JSON.stringify(duplicateImages));
