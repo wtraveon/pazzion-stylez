@@ -40,6 +40,8 @@ if(year) year.textContent=new Date().getFullYear();
 const bookingStatusStep=document.getElementById('bookingStatusStep');
 const bookingStatusMessage=document.getElementById('bookingStatusMessage');
 const selectedStylistSummary=document.getElementById('selectedStylistSummary');
+const clientStatusGrid=document.querySelector('.client-status-grid');
+const jahniquaBookingContact=document.getElementById('jahniquaBookingContact');
 const stylistButtons=[...document.querySelectorAll('[data-stylist]')];
 const clientStatusButtons=[...document.querySelectorAll('[data-client-status]')];
 const changeStylistButton=document.getElementById('changeStylist');
@@ -50,7 +52,11 @@ function selectBookingStylist(key,{focusStep=true}={}){
   if(!['latoya','kottia','jahniqua'].includes(key)) return;
   selectedStylist=key;
   stylistButtons.forEach(button=>button.setAttribute('aria-pressed',button.dataset.stylist===key?'true':'false'));
-  if(selectedStylistSummary) selectedStylistSummary.textContent=`You selected ${stylistDisplayName(key)}.`;
+  if(selectedStylistSummary) selectedStylistSummary.textContent=key==='jahniqua'
+    ? 'You selected JahNiqua Speight. Contact her directly to arrange an appointment.'
+    : `You selected ${stylistDisplayName(key)}.`;
+  if(clientStatusGrid) clientStatusGrid.hidden=key==='jahniqua';
+  if(jahniquaBookingContact) jahniquaBookingContact.hidden=key!=='jahniqua';
   if(bookingStatusStep){bookingStatusStep.hidden=false;if(focusStep) bookingStatusStep.focus();}
   if(bookingStatusMessage) bookingStatusMessage.textContent='';
 }
@@ -58,6 +64,8 @@ function resetBookingStylist(){
   selectedStylist='';
   stylistButtons.forEach(button=>button.setAttribute('aria-pressed','false'));
   if(bookingStatusStep) bookingStatusStep.hidden=true;
+  if(clientStatusGrid) clientStatusGrid.hidden=false;
+  if(jahniquaBookingContact) jahniquaBookingContact.hidden=true;
   if(bookingStatusMessage) bookingStatusMessage.textContent='';
   stylistButtons[0]?.focus();
 }
