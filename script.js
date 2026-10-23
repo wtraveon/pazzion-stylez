@@ -84,6 +84,8 @@ clientStatusButtons.forEach(button=>button.addEventListener('click',()=>openBook
 changeStylistButton?.addEventListener('click',resetBookingStylist);
 document.querySelectorAll('[data-book-stylist]').forEach(link=>link.addEventListener('click',()=>selectBookingStylist(link.dataset.bookStylist,{focusStep:false})));
 
+const requestedStylist=new URLSearchParams(window.location.search).get('stylist');
+if(['latoya','kottia','jahniqua'].includes(requestedStylist)) selectBookingStylist(requestedStylist,{focusStep:false});
 
 const lightbox=document.getElementById('lightbox');
 const lightboxImage=document.getElementById('lightboxImage');
