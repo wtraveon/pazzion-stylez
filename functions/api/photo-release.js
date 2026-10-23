@@ -58,7 +58,17 @@ export async function onRequestPost({ request, env }) {
     }
   }
 
-  const signed = validDate(signedDate) && signedDate <= new Date().toISOString().slice(0, 10);
+  const dateParts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).formatToParts(new Date());
+  const todayInSalonTime = Object.fromEntries(
+    dateParts.filter(part => part.type !== "literal").map(part => [part.type, part.value])
+  );
+  const salonDate = `${todayInSalonTime.year}-${todayInSalonTime.month}-${todayInSalonTime.day}`;
+  const signed = validDate(signedDate) && signedDate <= salonDate;
   if (!signed) return json({ success: false, message: "Please enter a valid signing date." }, 400);
   if (serviceDate && !validDate(serviceDate)) {
     return json({ success: false, message: "Please enter a valid service date." }, 400);
