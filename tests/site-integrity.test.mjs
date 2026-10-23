@@ -41,7 +41,7 @@ test("all HTML images declare an alt attribute", async () => {
     }
   }
   assert.deepEqual(missingAlt, [],
-    `Images missing alt attributes (use alt="" for decorative images):\\n${missingAlt.join("\\n")}`);
+    `Images missing alt attributes (use alt="" for decorative images):\n${missingAlt.join("\n")}`);
 });
 
 test("each public HTML page has exactly one primary heading", async () => {
@@ -54,7 +54,7 @@ test("each public HTML page has exactly one primary heading", async () => {
     if (count !== 1) invalid.push(`${relative}: found ${count} h1 elements`);
   }
   assert.deepEqual(invalid, [],
-    `Public pages should each have exactly one h1:\\n${invalid.join("\\n")}`);
+    `Public pages should each have exactly one h1:\n${invalid.join("\n")}`);
 });
 
 test("HTML pages have unique IDs", async () => {
