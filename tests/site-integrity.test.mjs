@@ -166,6 +166,41 @@ test("internal page links resolve to existing HTML pages", async () => {
   assert.deepEqual(broken, [], `Broken internal page links:\\n${broken.join("\\n")}`);
 });
 
+test("internal fragment links point to existing element IDs", async () => {
+  const broken = [];
+  const htmlCache = new Map();
+  async function readHtml(file) {
+    if (!htmlCache.has(file)) htmlCache.set(file, await readFile(file, "utf8"));
+    return htmlCache.get(file);
+  }
+  for (const file of htmlFiles) {
+    const html = await readHtml(file);
+    for (const match of html.matchAll(/<a\\b[^>]*\\bhref=["']([^"']*#[^"']*)["'][^>]*>/gi)) {
+      const href = match[1].trim();
+      if (!href || href.startsWith("//") || /^[a-z][a-z\\d+.-]*:/i.test(href)) continue;
+      const hashAt = href.indexOf("#");
+      const fragment = decodeURIComponent(href.slice(hashAt + 1));
+      if (!fragment) continue;
+      const pathname = decodeURIComponent(href.slice(0, hashAt).split("?", 1)[0]);
+      let target = pathname
+        ? (pathname.startsWith("/")
+          ? path.join(root, pathname.slice(1))
+          : path.resolve(path.dirname(file), pathname))
+        : file;
+      if (pathname && (target.endsWith(path.sep) || !path.extname(target))) target = path.join(target, "index.html");
+      let targetHtml;
+      try {
+        targetHtml = await readHtml(target);
+      } catch {
+        continue; // Missing page paths are reported by the internal-link test.
+      }
+      const ids = new Set([...targetHtml.matchAll(/\\bid=["']([^"']+)["']/gi)].map(([, id]) => id));
+      if (!ids.has(fragment)) broken.push(`${path.relative(root, file)} -> ${href} (missing #${fragment})`);
+    }
+  }
+  assert.deepEqual(broken, [], `Broken internal fragment links:\\n${broken.join("\\n")}`);
+});
+
 test("local static asset references resolve to existing files", async () => {
   const missing = [];
   for (const file of htmlFiles) {
