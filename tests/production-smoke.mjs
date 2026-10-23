@@ -59,6 +59,11 @@ const publishedPageResults = await Promise.all(sitemapUrls.map(async url => {
     `Sitemap page ${parsed.pathname} should return HTML`);
   const html = await response.text();
   assert.match(html, /<title>[^<]+<\/title>/i, `Sitemap page ${parsed.pathname} should have a page title`);
+  const canonicalMatch = html.match(/<link\b[^>]*\brel=["']canonical["'][^>]*\bhref=["']([^"']+)["'][^>]*>/i)
+    || html.match(/<link\b[^>]*\bhref=["']([^"']+)["'][^>]*\brel=["']canonical["'][^>]*>/i);
+  assert.ok(canonicalMatch, `Sitemap page ${parsed.pathname} should declare a canonical URL`);
+  assert.equal(new URL(canonicalMatch[1], url).href, url,
+    `Sitemap page ${parsed.pathname} canonical URL should match its sitemap URL`);
   return parsed.pathname;
 }));
 console.log(`Published sitemap pages verified: ${publishedPageResults.length}`);
