@@ -30,6 +30,20 @@ function localReference(ref, file) {
     : path.resolve(path.dirname(file), value);
 }
 
+test("all HTML images declare an alt attribute", async () => {
+  const missingAlt = [];
+  for (const file of htmlFiles) {
+    const html = await readFile(file, "utf8");
+    for (const match of html.matchAll(/<img\\b[^>]*>/gi)) {
+      if (!/\\balt\\s*=/i.test(match[0])) {
+        missingAlt.push(`${path.relative(root, file)}: ${match[0].slice(0, 140)}`);
+      }
+    }
+  }
+  assert.deepEqual(missingAlt, [],
+    `Images missing alt attributes (use alt="" for decorative images):\\n${missingAlt.join("\\n")}`);
+});
+
 test("HTML pages have unique IDs", async () => {
   const duplicates = [];
   for (const file of htmlFiles) {
