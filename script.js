@@ -449,7 +449,7 @@ if(contactForm){
           topic,
           preferred_stylist:preferredStylist,
           message,
-          _honey:'',
+          _honey:honey,
           turnstile_token:formProtection.tokens.contact
         })
       },20000);
@@ -697,7 +697,7 @@ if(photoReleaseForm){
         guardian_email:isMinor?guardianEmail.value.trim():'',
         guardian_phone:isMinor?document.getElementById('guardianPhone').value.trim():'',
         guardian_signature:isMinor?guardianSignature.value.trim():'',
-        _honey:'',
+        _honey:honey,
         turnstile_token:formProtection.tokens.photoRelease
       };
 
