@@ -76,23 +76,28 @@ const squareResults = await Promise.all([...routes.entries()].map(async ([key, u
   for (let attempt = 1; attempt <= 2; attempt += 1) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
+    let response;
     try {
-      const response = await fetch(url, {
+      response = await fetch(url, {
         redirect: "follow",
         signal: controller.signal,
         headers: { "user-agent": "Mozilla/5.0 (compatible; PazzionStylez-ProductionSmoke/1.0)" }
       });
-      assert.ok(
-        ![404, 410].includes(response.status) && response.status < 500,
-        `Square route ${key} returned HTTP ${response.status}: ${url}`
-      );
-      return { key, status: response.status, attempt };
     } catch (error) {
       lastError = error;
       if (attempt === 2) break;
+      continue;
     } finally {
       clearTimeout(timer);
     }
+
+    // HTTP failures are deterministic test failures, not transient network errors:
+    // report the real status immediately rather than retrying and masking it.
+    assert.ok(
+      ![404, 410].includes(response.status) && response.status < 500,
+      `Square route ${key} returned HTTP ${response.status}: ${url}`
+    );
+    return { key, status: response.status, attempt };
   }
   throw new Error(`Square route ${key} failed after 2 attempts: ${lastError?.name || "network error"}: ${url}`);
 }));
