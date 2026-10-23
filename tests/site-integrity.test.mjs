@@ -147,7 +147,7 @@ test("internal page links resolve to existing HTML pages", async () => {
     const html = await readFile(file, "utf8");
     for (const match of html.matchAll(/<a\b[^>]*\bhref=["']([^"']+)["'][^>]*>/gi)) {
       const href = match[1].trim();
-      if (!href || href.startsWith("#") || href.startsWith("//") || /^[a-z][a-z\\d+.-]*:/i.test(href)) continue;
+      if (!href || href.startsWith("#") || href.startsWith("//") || /^[a-z][a-z\d+.-]*:/i.test(href)) continue;
       const pathname = decodeURIComponent(href.split(/[?#]/, 1)[0]);
       if (!pathname) continue;
       let target = pathname.startsWith("/")
@@ -177,7 +177,7 @@ test("internal fragment links point to existing element IDs", async () => {
     const html = await readHtml(file);
     for (const match of html.matchAll(/<a\b[^>]*\bhref=["']([^"']*#[^"']*)["'][^>]*>/gi)) {
       const href = match[1].trim();
-      if (!href || href.startsWith("//") || /^[a-z][a-z\\d+.-]*:/i.test(href)) continue;
+      if (!href || href.startsWith("//") || /^[a-z][a-z\d+.-]*:/i.test(href)) continue;
       const hashAt = href.indexOf("#");
       const fragment = decodeURIComponent(href.slice(hashAt + 1));
       if (!fragment) continue;
@@ -431,7 +431,7 @@ test("homepage and salon policy agree on deposits and new-client consultations",
 
 test("homepage JSON-LD structured data parses as valid JSON", async () => {
   const homepage = await readFile(path.join(root, "index.html"), "utf8");
-  const blocks = [...homepage.matchAll(/<script\\b[^>]*type=["']application\\/ld\\+json["'][^>]*>([\\s\\S]*?)<\\/script>/gi)];
+  const blocks = [...homepage.matchAll(/<script\b[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)];
   assert.ok(blocks.length > 0, "Homepage should include JSON-LD structured data");
   for (const [, json] of blocks) {
     assert.doesNotThrow(() => JSON.parse(json), "Each JSON-LD block should contain valid JSON");
