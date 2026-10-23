@@ -18,7 +18,10 @@ export function validEmail(value) {
   if (at < 1 || at > 64 || at === value.length - 1) return false;
   const local = value.slice(0, at);
   const domain = value.slice(at + 1);
-  if (/\s/.test(value) || local.includes("..") || domain.includes("..")) return false;
+  // Accept conventional dot-atom email addresses; reject control and header syntax.
+  if (!/^[A-Za-z0-9.!#$%&'*+/=?^`{|}~-]+$/.test(local) ||
+      local.startsWith(".") || local.endsWith(".") || local.includes("..") ||
+      /\s/.test(value) || domain.includes("..")) return false;
   const labels = domain.split(".");
   if (labels.length < 2 || labels.some(label =>
     !label || label.length > 63 || !/^[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?$/.test(label)
