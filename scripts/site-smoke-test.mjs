@@ -32,10 +32,10 @@ for (const file of htmlFiles) {
   const html = await readFile(file, 'utf8');
   pages.set(file, html);
   const label = rel(file);
-  const titles = [...html.matchAll(/<title\\b[^>]*>([\\s\\S]*?)<\\/title>/gi)];
-  const descriptionTags = [...html.matchAll(/<meta\\b(?=[^>]*\\bname=[\"']description[\"'])[^>]*>/gi)].map((m) => m[0]);
-  const descriptions = descriptionTags.map((tag) => tag.match(/\\bcontent=[\"']([^\"']*)[\"']/i)?.[1] ?? \"\");
-  const canonicalTags = [...html.matchAll(/<link\\b(?=[^>]*\\brel=[\"']canonical[\"'])[^>]*>/gi)];
+  const titles = [...html.matchAll(/<title\b[^>]*>([\s\S]*?)<\/title>/gi)];
+  const descriptionTags = [...html.matchAll(/<meta\b(?=[^>]*\bname=[\"']description[\"'])[^>]*>/gi)].map((m) => m[0]);
+  const descriptions = descriptionTags.map((tag) => tag.match(/\bcontent=[\"']([^\"']*)[\"']/i)?.[1] ?? \"\");
+  const canonicalTags = [...html.matchAll(/<link\b(?=[^>]*\brel=[\"']canonical[\"'])[^>]*>/gi)];
   if (titles.length !== 1 || !titles[0][1].trim()) fail(`\${label}: expected exactly one non-empty title.`);
   if (descriptions.length !== 1 || !descriptions[0].trim()) fail(`\${label}: expected exactly one non-empty meta description.`);
   if (canonicalTags.length !== 1) fail(`\${label}: expected exactly one canonical link.`);
