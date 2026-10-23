@@ -121,11 +121,12 @@ assert.match(policyPage, /No deposit is collected, so there is no deposit to for
 const bookingRoutesSource = await getText("/booking-routes.js");
 const routePairs = [...bookingRoutesSource.matchAll(/['"](latoya-new|latoya-returning|kottia-new|kottia-returning)['"]\s*:\s*['"](https:\/\/book\.squareup\.com\/appointments\/[^'"]+)['"]/g)];
 const routes = new Map(routePairs.map(([, key, url]) => [key, url]));
-for (const key of ["latoya-new", "latoya-returning", "kottia-new", "kottia-returning"]) {
+for (const key of ["latoya-new", "latoya-returning", "kottia-new", "kottia-returning", "jahniqua-new", "jahniqua-returning"]) {
   assert.ok(routes.has(key), `Missing live Square booking route: ${key}`);
-  assert.equal(new URL(routes.get(key)).hostname, "book.squareup.com", `${key} must use the official Square booking host`);
+  assert.ok(["book.squareup.com", "app.squareup.com"].includes(new URL(routes.get(key)).hostname), `${key} must use the official Square booking host`);
 }
-assert.equal(routes.size, 4, "Unexpected number of online Square booking routes");
+assert.equal(routes.size, 6, "Expected two client-status routes per online-booking stylist");
+assert.equal(routes.get("jahniqua-new"), routes.get("jahniqua-returning"), "JahNiqua should use her verified Square booking link for both client statuses");
 
 // Check the actual Square endpoints as well as the local mapping. Square may
 // challenge automated clients (403/429); those statuses still prove the host
