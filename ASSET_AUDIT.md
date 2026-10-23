@@ -4,7 +4,7 @@
 **Baseline branch:** `main`  
 **Baseline commit scanned:** `942979878b4eaf0883131b2d09fa3a5f02540297`
 
-> The counts below are a snapshot from the baseline commit, not a claim that the current branch has identical file counts. The current `main` branch also runs `tests/site-integrity.test.mjs` in GitHub Actions to check every tracked HTML page for duplicate IDs, missing local static assets, and consistent cache-busting for `script.js`. The automated check passed on commit `9fc538b492258054d7d5a80c79af41eb349b0c8d`.
+> The counts below are a snapshot from the baseline commit, not a claim that the current branch has identical file counts. The current `main` branch runs `tests/site-integrity.test.mjs` in GitHub Actions. It checks tracked HTML pages for duplicate IDs and missing local static assets, consistent cache-busting versions for both `script.js` and `styles.css`, and sitemap URL uniqueness and tracked-page targets. The latest check passed on commit `4d919238befbbaca9778b6d7189d510f8f573aa4`.
 
 ## Result
 
@@ -15,7 +15,7 @@
 - **371** local links checked across the HTML pages; **0** broken local targets found.
 - **0** duplicate HTML IDs found.
 
-The previous 2026-10-15 audit stated that the repository had no `assets/` directory. That finding is stale: the assets are now present. This scan checks references in HTML attributes (`src`, `href`, and `content`) against the recursive Git tree. The same source scan checked 371 relative/local links and duplicate IDs across the 16 HTML pages. It does not check CSS URLs, runtime-generated URLs, live HTTP status, browser rendering, JavaScript behavior, external links, or image visual correctness.
+The previous 2026-10-15 audit stated that the repository had no `assets/` directory. That finding is stale: the assets are now present. This scan checks references in HTML attributes (`src`, `href`, and `content`) against the recursive Git tree. The baseline source scan checked 371 relative/local links and duplicate IDs across those 16 HTML pages. It does not check CSS URLs, runtime-generated URLs, live HTTP status, browser rendering, JavaScript behavior, external links, or image visual correctness.
 
 ## Follow-up review
 
