@@ -306,7 +306,9 @@ async function initFormProtection(){
 }
 
 function startProtectionInit(force=false){
-  if(force||!protectionInitPromise){
+  // Share an in-flight initialization across simultaneous submit attempts.
+  // A failed initialization can still be retried once it has settled.
+  if(!protectionInitPromise||(force&&formProtection.mode!=='loading')){
     protectionInitPromise=initFormProtection();
   }
   return protectionInitPromise;
