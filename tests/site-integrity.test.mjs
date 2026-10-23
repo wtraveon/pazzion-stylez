@@ -474,3 +474,34 @@ test("every product listing uses its fitted product image", async () => {
   const duplicateImages = tiles.filter((tile, index) => tiles.findIndex(other => other.image === tile.image) !== index);
   assert.deepEqual(duplicateImages, [], "Each product listing should use its own fitted image: " + JSON.stringify(duplicateImages));
 });
+
+
+test("local CSS url() assets resolve to existing files", async () => {
+  const cssFiles = [];
+  async function walkCss(directory) {
+    for (const entry of await readdir(directory, { withFileTypes: true })) {
+      if (entry.name === ".git" || entry.name === "node_modules") continue;
+      const fullPath = path.join(directory, entry.name);
+      if (entry.isDirectory()) await walkCss(fullPath);
+      else if (entry.isFile() && entry.name.endsWith(".css")) cssFiles.push(fullPath);
+    }
+  }
+  await walkCss(root);
+  const broken = [];
+  for (const file of cssFiles) {
+    const css = await readFile(file, "utf8");
+    for (const match of css.matchAll(/url\(\s*(?:"([^"]+)"|'([^']+)'|([^\s)'"]+))\s*\)/gi)) {
+      const ref = (match[1] || match[2] || match[3] || "").trim();
+      if (!ref || ref.startsWith("#") || ref.startsWith("//") || /^[a-z][a-z\d+.-]*:/i.test(ref) || ref.startsWith("var(")) continue;
+      const pathname = decodeURIComponent(ref.split(/[?#]/, 1)[0]);
+      if (!pathname) continue;
+      const target = pathname.startsWith("/") ? path.join(root, pathname.slice(1)) : path.resolve(path.dirname(file), pathname);
+      try {
+        await access(target);
+      } catch {
+        broken.push(path.relative(root, file) + " -> " + ref);
+      }
+    }
+  }
+  assert.deepEqual(broken, [], "Broken local CSS url() assets:\n" + broken.join("\n"));
+});
