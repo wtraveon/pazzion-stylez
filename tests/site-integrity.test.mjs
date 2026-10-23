@@ -418,3 +418,22 @@ test("product cards disclose that Square links open the general storefront", asy
   assert.match(productPage, /opens the Square storefront, not a product-specific checkout page/i,
     "The product page should explain that shoppers need to find the item in the Square storefront");
 });
+
+
+test("homepage and salon policy agree on deposits and new-client consultations", async () => {
+  const homepage = await readFile(path.join(root, "index.html"), "utf8");
+  const policies = await readFile(path.join(root, "policies", "index.html"), "utf8");
+  for (const [name, html] of [["homepage", homepage], ["policies page", policies]]) {
+    assert.match(html, /No deposit is required/i, `${name} should communicate the no-deposit policy`);
+    assert.match(html, /\$25 consultation/i, `${name} should disclose the new-client consultation fee`);
+  }
+});
+
+test("homepage JSON-LD structured data parses as valid JSON", async () => {
+  const homepage = await readFile(path.join(root, "index.html"), "utf8");
+  const blocks = [...homepage.matchAll(/<script\\b[^>]*type=["']application\\/ld\\+json["'][^>]*>([\\s\\S]*?)<\\/script>/gi)];
+  assert.ok(blocks.length > 0, "Homepage should include JSON-LD structured data");
+  for (const [, json] of blocks) {
+    assert.doesNotThrow(() => JSON.parse(json), "Each JSON-LD block should contain valid JSON");
+  }
+});
