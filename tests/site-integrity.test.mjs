@@ -145,9 +145,9 @@ test("internal page links resolve to existing HTML pages", async () => {
   const broken = [];
   for (const file of htmlFiles) {
     const html = await readFile(file, "utf8");
-    for (const match of html.matchAll(/<a\\b[^>]*\\bhref=["']([^"']+)["'][^>]*>/gi)) {
+    for (const match of html.matchAll(/<a\b[^>]*\bhref=["']([^"']+)["'][^>]*>/gi)) {
       const href = match[1].trim();
-      if (!href || href.startsWith("#") || href.startsWith("//") || /^[a-z][a-z\\d+.-]*:/i.test(href)) continue;
+      if (!href || href.startsWith("#") || href.startsWith("//") || /^[a-z][a-z\d+.-]*:/i.test(href)) continue;
       const pathname = decodeURIComponent(href.split(/[?#]/, 1)[0]);
       if (!pathname) continue;
       let target = pathname.startsWith("/")
@@ -175,9 +175,9 @@ test("internal fragment links point to existing element IDs", async () => {
   }
   for (const file of htmlFiles) {
     const html = await readHtml(file);
-    for (const match of html.matchAll(/<a\\b[^>]*\\bhref=["']([^"']*#[^"']*)["'][^>]*>/gi)) {
+    for (const match of html.matchAll(/<a\b[^>]*\bhref=["']([^"']*#[^"']*)["'][^>]*>/gi)) {
       const href = match[1].trim();
-      if (!href || href.startsWith("//") || /^[a-z][a-z\\d+.-]*:/i.test(href)) continue;
+      if (!href || href.startsWith("//") || /^[a-z][a-z\d+.-]*:/i.test(href)) continue;
       const hashAt = href.indexOf("#");
       const fragment = decodeURIComponent(href.slice(hashAt + 1));
       if (!fragment) continue;
@@ -194,7 +194,7 @@ test("internal fragment links point to existing element IDs", async () => {
       } catch {
         continue; // Missing page paths are reported by the internal-link test.
       }
-      const ids = new Set([...targetHtml.matchAll(/\\bid=["']([^"']+)["']/gi)].map(([, id]) => id));
+      const ids = new Set([...targetHtml.matchAll(/\bid=["']([^"']+)["']/gi)].map(([, id]) => id));
       if (!ids.has(fragment)) broken.push(`${path.relative(root, file)} -> ${href} (missing #${fragment})`);
     }
   }
@@ -401,4 +401,39 @@ test("deployment security headers and robots sitemap declaration stay configured
   assert.ok(robots.includes("User-agent: *"), "robots.txt should define rules for all crawlers");
   assert.ok(robots.includes("Disallow: /api/"), "robots.txt should keep API endpoints out of crawler discovery");
   assert.ok(robots.includes("Sitemap: https://pazzionstylez.com/sitemap.xml"), "robots.txt should declare the production sitemap");
+});
+
+
+
+test("product cards disclose that Square links open the general storefront", async () => {
+  const productPage = await readFile(path.join(root, "products", "index.html"), "utf8");
+  const tiles = [...productPage.matchAll(/<article class="ps-product-tile">([\s\S]*?)<\/article>/gi)].map(([, tile]) => tile);
+  assert.equal(tiles.length, 11, "Expected all eleven product tiles to be present");
+  for (const tile of tiles) {
+    assert.match(tile, /href="https:\/\/pazzion-stylez-llc\.square\.site\/"[^>]*aria-label="Open the Square store to find [^"]+"/i,
+      "Product image links should clearly state that Square opens the storefront");
+    assert.match(tile, />Browse Square store <span aria-hidden="true">↗<\/span>/i,
+      "Product CTA should not imply a product-specific checkout destination");
+  }
+  assert.match(productPage, /opens the Square storefront, not a product-specific checkout page/i,
+    "The product page should explain that shoppers need to find the item in the Square storefront");
+});
+
+
+test("homepage and salon policy agree on deposits and new-client consultations", async () => {
+  const homepage = await readFile(path.join(root, "index.html"), "utf8");
+  const policies = await readFile(path.join(root, "policies", "index.html"), "utf8");
+  for (const [name, html] of [["homepage", homepage], ["policies page", policies]]) {
+    assert.match(html, /No deposit is required/i, `${name} should communicate the no-deposit policy`);
+    assert.match(html, /\$25 consultation/i, `${name} should disclose the new-client consultation fee`);
+  }
+});
+
+test("homepage JSON-LD structured data parses as valid JSON", async () => {
+  const homepage = await readFile(path.join(root, "index.html"), "utf8");
+  const blocks = [...homepage.matchAll(/<script\b[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)];
+  assert.ok(blocks.length > 0, "Homepage should include JSON-LD structured data");
+  for (const [, json] of blocks) {
+    assert.doesNotThrow(() => JSON.parse(json), "Each JSON-LD block should contain valid JSON");
+  }
 });
