@@ -86,3 +86,41 @@ test("pages that load script.js use the same cache-busting version", async () =>
   assert.equal(uniqueVersions.length, 1, `Inconsistent script.js cache versions: ${JSON.stringify(Object.fromEntries(versions))}`);
   assert.notEqual(uniqueVersions[0], "(missing)", "script.js must have a cache-busting version");
 });
+
+
+test("pages that load styles.css use the same cache-busting version", async () => {
+  const versions = new Map();
+  for (const file of htmlFiles) {
+    const html = await readFile(file, "utf8");
+    for (const match of html.matchAll(/<link\\b[^>]*\\bhref=["']([^"']*styles\\.css(?:\\?[^"']*)?)["'][^>]*>/gi)) {
+      const url = match[1];
+      const version = new URL(url, "https://pazzionstylez.com/").searchParams.get("v");
+      versions.set(path.relative(root, file), version || "(missing)");
+    }
+  }
+  assert.ok(versions.size > 0, "Expected at least one page to load styles.css");
+  const uniqueVersions = [...new Set(versions.values())];
+  assert.equal(uniqueVersions.length, 1, `Inconsistent styles.css cache versions: ${JSON.stringify(Object.fromEntries(versions))}`);
+  assert.notEqual(uniqueVersions[0], "(missing)", "styles.css must have a cache-busting version");
+});
+
+test("sitemap URLs point to tracked HTML pages", async () => {
+  const sitemapPath = path.join(root, "sitemap.xml");
+  const sitemap = await readFile(sitemapPath, "utf8");
+  const urls = [...sitemap.matchAll(/<loc>(https:\\/\\/pazzionstylez\\.com([^<]*))<\\/loc>/gi)];
+  assert.ok(urls.length > 0, "Expected public URLs in sitemap.xml");
+  const missing = [];
+  const seen = new Set();
+  for (const [, fullUrl, urlPath] of urls) {
+    if (seen.has(fullUrl)) missing.push(`duplicate URL: ${fullUrl}`);
+    seen.add(fullUrl);
+    const relative = urlPath.replace(/^\\//, "");
+    const target = path.join(root, relative, relative.endsWith(".html") ? "" : "index.html");
+    try {
+      await access(target);
+    } catch {
+      missing.push(`missing HTML page: ${fullUrl} -> ${path.relative(root, target)}`);
+    }
+  }
+  assert.deepEqual(missing, [], `Invalid sitemap entries:\\n${missing.join("\\n")}`);
+});
