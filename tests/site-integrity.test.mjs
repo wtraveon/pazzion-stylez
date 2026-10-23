@@ -145,7 +145,7 @@ test("internal page links resolve to existing HTML pages", async () => {
   const broken = [];
   for (const file of htmlFiles) {
     const html = await readFile(file, "utf8");
-    for (const match of html.matchAll(/<a\\b[^>]*\\bhref=["']([^"']+)["'][^>]*>/gi)) {
+    for (const match of html.matchAll(/<a\b[^>]*\bhref=["']([^"']+)["'][^>]*>/gi)) {
       const href = match[1].trim();
       if (!href || href.startsWith("#") || href.startsWith("//") || /^[a-z][a-z\\d+.-]*:/i.test(href)) continue;
       const pathname = decodeURIComponent(href.split(/[?#]/, 1)[0]);
@@ -175,7 +175,7 @@ test("internal fragment links point to existing element IDs", async () => {
   }
   for (const file of htmlFiles) {
     const html = await readHtml(file);
-    for (const match of html.matchAll(/<a\\b[^>]*\\bhref=["']([^"']*#[^"']*)["'][^>]*>/gi)) {
+    for (const match of html.matchAll(/<a\b[^>]*\bhref=["']([^"']*#[^"']*)["'][^>]*>/gi)) {
       const href = match[1].trim();
       if (!href || href.startsWith("//") || /^[a-z][a-z\\d+.-]*:/i.test(href)) continue;
       const hashAt = href.indexOf("#");
@@ -194,7 +194,7 @@ test("internal fragment links point to existing element IDs", async () => {
       } catch {
         continue; // Missing page paths are reported by the internal-link test.
       }
-      const ids = new Set([...targetHtml.matchAll(/\\bid=["']([^"']+)["']/gi)].map(([, id]) => id));
+      const ids = new Set([...targetHtml.matchAll(/\bid=["']([^"']+)["']/gi)].map(([, id]) => id));
       if (!ids.has(fragment)) broken.push(`${path.relative(root, file)} -> ${href} (missing #${fragment})`);
     }
   }
