@@ -104,6 +104,31 @@ test("pages that load styles.css use the same cache-busting version", async () =
   assert.notEqual(uniqueVersions[0], "(missing)", "styles.css must have a cache-busting version");
 });
 
+test("public HTML pages have unique, nonempty meta descriptions", async () => {
+  const descriptions = new Map();
+  const problems = [];
+  for (const file of htmlFiles) {
+    const relative = path.relative(root, file).split(path.sep).join("/");
+    if (relative === "404.html") continue;
+    const html = await readFile(file, "utf8");
+    const tag = [...html.matchAll(/<meta\\b[^>]*>/gi)]
+      .map(match => match[0])
+      .find(meta => /\\bname=["']description["']/i.test(meta));
+    const description = tag?.match(/\\bcontent=["']([^"']*)["']/i)?.[1]?.trim();
+    if (!description) {
+      problems.push(`${relative}: missing or empty meta description`);
+      continue;
+    }
+    const normalized = description.replace(/\\s+/g, " ").toLowerCase();
+    if (descriptions.has(normalized)) {
+      problems.push(`${relative}: duplicate meta description also used by ${descriptions.get(normalized)}`);
+    } else {
+      descriptions.set(normalized, relative);
+    }
+  }
+  assert.deepEqual(problems, [], `Meta description issues:\\n${problems.join("\\n")}`);
+});
+
 test("public HTML pages declare their own canonical URL", async () => {
   const missingOrIncorrect = [];
   for (const file of htmlFiles) {
