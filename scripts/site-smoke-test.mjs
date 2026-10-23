@@ -94,7 +94,7 @@ for (const file of htmlFiles) {
 const routesFile = path.join(root, 'booking-routes.js');
 try {
   const routes = await readFile(routesFile, 'utf8');
-  for (const key of ['latoya-new', 'latoya-returning', 'kottia-new', 'kottia-returning']) {
+  for (const key of ['latoya-new', 'latoya-returning', 'kottia-new', 'kottia-returning', 'jahniqua-new', 'jahniqua-returning']) {
     if (!routes.includes(`'${key}'`)) fail(`booking-routes.js: missing route key ${key}.`);
   }
   for (const url of routes.matchAll(/['"](https?:\/\/[^'"]+)['"]/g)) {
