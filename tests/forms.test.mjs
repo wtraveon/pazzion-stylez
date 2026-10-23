@@ -198,3 +198,32 @@ test("verifyTurnstile rejects provider errors and malformed responses", async ()
     globalThis.fetch = originalFetch;
   }
 });
+
+
+test("sendEmail fails safely when the provider request times out or disconnects", async () => {
+  const originalFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async () => { throw new DOMException("The operation was aborted", "AbortError"); };
+    const result = await sendEmail({
+      CLOUDFLARE_ACCOUNT_ID: "account",
+      CLOUDFLARE_EMAIL_API_TOKEN: "token",
+      FORM_NOTIFICATION_TO: "salon@example.com",
+      FROM_EMAIL: "website@example.com"
+    }, "Subject", "<p>Body</p>");
+    assert.deepEqual(result, { ok: false });
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("verifyTurnstile fails closed when verification network request fails", async () => {
+  const originalFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async () => { throw new TypeError("network unavailable"); };
+    const request = new Request("https://pazzionstylez.com/api/contact", { method: "POST" });
+    const env = { TURNSTILE_SITE_KEY: "site-key", TURNSTILE_SECRET_KEY: "secret" };
+    assert.equal(await verifyTurnstile("token", request, env, "contact"), false);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
