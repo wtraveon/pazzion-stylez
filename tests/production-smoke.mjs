@@ -28,6 +28,15 @@ const homepageResponse = await request("/");
 assert.equal(homepageResponse.status, 200, `Homepage returned HTTP ${homepageResponse.status}`);
 const homepage = await homepageResponse.text();
 assert.match(homepage, /<title>[^<]*Pazzion Stylez/i, "Homepage title should identify Pazzion Stylez");
+assert.match(homepage, /Browse the general Pazzion Stylez Square storefront and search for the product name/i,
+  "Live homepage FAQ must accurately explain how to find products in the general Square storefront");
+assert.doesNotMatch(homepage, /Pickup and shipping options are shown during checkout/i,
+  "Live homepage must not promise unverified Square checkout options");
+const productPage = await getText("/products/");
+assert.match(productPage, />Browse Square store</i,
+  "Live product hero CTA must describe the general Square storefront accurately");
+assert.match(productPage, /Product links open the general Square storefront, not individual product pages/i,
+  "Live product page must clarify that product links do not open individual product listings");
 assert.match(homepage, /href=["']\/?\?stylist=jahniqua#booking["'][^>]*>Request Appointment with Jah/i,
   "Live homepage should expose JahNiqua's preselected appointment request path");
 assert.match(homepage, /data-stylist=["']jahniqua["']/i,
