@@ -32,6 +32,11 @@ assert.match(homepage, /Browse the general Pazzion Stylez Square storefront and 
   "Live homepage FAQ must accurately explain how to find products in the general Square storefront");
 assert.doesNotMatch(homepage, /Pickup and shipping options are shown during checkout/i,
   "Live homepage must not promise unverified Square checkout options");
+const photoReleasePage = await getText("/photo-release/");
+for (const stylist of ["LaToya Terry", "Kottia Cotton", "JahNiqua Speight"]) {
+  assert.match(photoReleasePage, new RegExp(`<option value=["']${stylist}["']>${stylist}</option>`, "i"),
+    `Live photo-release form should offer ${stylist}`);
+}
 const productPage = await getText("/products/");
 assert.match(productPage, /<div class="hero-actions">[^]*?<a class="btn btn-primary"[^>]*>Browse Square store<\/a>/i,
   "Live product hero CTA must use the accurate general-storefront label");
