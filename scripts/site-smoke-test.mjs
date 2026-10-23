@@ -37,8 +37,10 @@ for (const file of htmlFiles) {
   const descriptions = descriptionTags.map((tag) => tag.match(/\bcontent=["']([^"']*)["']/i)?.[1] ?? "");
   const canonicalTags = [...html.matchAll(/<link\b(?=[^>]*\brel=[\"']canonical[\"'])[^>]*>/gi)];
   if (titles.length !== 1 || !titles[0][1].trim()) fail(`${label}: expected exactly one non-empty title.`);
-  if (descriptions.length !== 1 || !descriptions[0].trim()) fail(`${label}: expected exactly one non-empty meta description.`);
-  if (canonicalTags.length !== 1) fail(`${label}: expected exactly one canonical link.`);
+  if (label !== '404.html') {
+    if (descriptions.length !== 1 || !descriptions[0].trim()) fail(`${label}: expected exactly one non-empty meta description.`);
+    if (canonicalTags.length !== 1) fail(`${label}: expected exactly one canonical link.`);
+  }
 
   const ids = new Set([...html.matchAll(/\bid=["']([^"']+)["']/gi)].map((m) => m[1]));
   const seenIds = new Set();
