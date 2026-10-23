@@ -44,6 +44,19 @@ test("all HTML images declare an alt attribute", async () => {
     `Images missing alt attributes (use alt="" for decorative images):\\n${missingAlt.join("\\n")}`);
 });
 
+test("each public HTML page has exactly one primary heading", async () => {
+  const invalid = [];
+  for (const file of htmlFiles) {
+    const relative = path.relative(root, file).split(path.sep).join("/");
+    if (relative === "404.html") continue;
+    const html = await readFile(file, "utf8");
+    const count = [...html.matchAll(/<h1\\b[^>]*>/gi)].length;
+    if (count !== 1) invalid.push(`${relative}: found ${count} h1 elements`);
+  }
+  assert.deepEqual(invalid, [],
+    `Public pages should each have exactly one h1:\\n${invalid.join("\\n")}`);
+});
+
 test("HTML pages have unique IDs", async () => {
   const duplicates = [];
   for (const file of htmlFiles) {
