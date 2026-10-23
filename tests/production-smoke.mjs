@@ -28,6 +28,16 @@ const homepageResponse = await request("/");
 assert.equal(homepageResponse.status, 200, `Homepage returned HTTP ${homepageResponse.status}`);
 const homepage = await homepageResponse.text();
 assert.match(homepage, /<title>[^<]*Pazzion Stylez/i, "Homepage title should identify Pazzion Stylez");
+assert.match(homepage, /href=["']\/?\?stylist=jahniqua#booking["'][^>]*>Request Appointment with Jah/i,
+  "Live homepage should expose JahNiqua's preselected appointment request path");
+assert.match(homepage, /data-stylist=["']jahniqua["']/i,
+  "Live homepage should include JahNiqua in stylist selection");
+const jahProfile = await getText("/team/jahniqua-speight/");
+assert.match(jahProfile, /href=["']\/?\?stylist=jahniqua#booking["'][^>]*>Request Appointment/i,
+  "Live JahNiqua profile should link to her appointment request path");
+const bookingScript = await getText("/script.js?v=20261023-1638");
+assert.match(bookingScript, /new URLSearchParams\(window\.location\.search\)\.get\('stylist'\)/,
+  "Live booking script should support stylist preselection from profile links");
 
 for (const [header, expected] of [
   ["x-content-type-options", "nosniff"],
