@@ -21,6 +21,30 @@ async function walk(directory) {
 const htmlFiles = await walk(root);
 const assetExtensions = /\.(?:css|js|mjs|png|jpe?g|webp|gif|svg|ico|woff2?|ttf|mp4|webm|pdf)$/i;
 
+test("JahNiqua is selectable in booking and has a working direct-contact fallback", async () => {
+  const homepage = await readFile(path.join(root, "index.html"), "utf8");
+  const script = await readFile(path.join(root, "script.js"), "utf8");
+  const routes = await readFile(path.join(root, "booking-routes.js"), "utf8");
+
+  assert.match(homepage, /data-stylist="jahniqua"/i,
+    "JahNiqua should be a selectable stylist in the booking section");
+  assert.match(homepage, /id="jahniquaBookingContact"/i,
+    "JahNiqua should have a dedicated appointment contact panel");
+  assert.match(homepage, /href="tel:\+12523159963"/i,
+    "JahNiqua's contact panel should include her phone link");
+  assert.match(homepage, /href="sms:\+12523159963"/i,
+    "JahNiqua's contact panel should include her text link");
+  assert.match(homepage, /href="mailto:jspeight13@yahoo\.com"/i,
+    "JahNiqua's contact panel should include her email link");
+  assert.match(script, /key==='jahniqua'\?'none':''/,
+    "Selecting JahNiqua should hide the LaToya/Kottia online booking status options");
+  assert.match(script, /jahniquaBookingContact\.hidden=key!=='jahniqua'/,
+    "Selecting JahNiqua should show her direct appointment contact panel");
+  assert.doesNotMatch(routes, /jahniqua-(?:new|returning)/i,
+    "Do not invent Square booking routes for JahNiqua without her confirmed booking URLs");
+});
+
+
 function localReference(ref, file) {
   const value = ref.trim().split(/[?#]/, 1)[0];
   if (!value || value.startsWith("//") || /^[a-z][a-z\d+.-]*:/i.test(value)) return null;
