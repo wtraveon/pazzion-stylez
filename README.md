@@ -44,8 +44,10 @@ Use the specific configuration guidance in [functions/README.md](functions/READM
 
 ## Asset completeness
 
-The tracked repository now contains the `assets/` tree. A recursive audit of the 16 tracked HTML pages found 32 distinct referenced image/media assets and no missing referenced paths. See [ASSET_AUDIT.md](ASSET_AUDIT.md) for the current scan result and remaining unreferenced assets to review.
+The tracked repository contains the `assets/` tree. The counts in [ASSET_AUDIT.md](ASSET_AUDIT.md) are a baseline snapshot and should not be treated as current totals; the automated integrity suite now checks local asset references and duplicate IDs on every push and pull request.
 
 ## Validation status
 
-The repository structure and local file references have been inspected, but this README is not a claim that production forms, every browser/device, or every external booking flow has been end-to-end tested. Confirm Cloudflare environment settings, then test the live forms and booking links after deployment. A successful repository asset audit does not by itself confirm that the live deployment is serving the latest commit.
+GitHub Actions runs the form regression tests, static site integrity tests, and JavaScript syntax checks on every push to `main` and pull request. A separate [production smoke-check workflow](.github/workflows/production-smoke.yml) checks the live homepage and policy, published booking-route mappings and Square endpoint reachability, Turnstile configuration, and invalid-payload handling for both form APIs after pushes and on a daily schedule.
+
+These automated checks are not a substitute for a real browser test of form submissions and receipt of notification emails. The production smoke test has observed HTTP 429 from Square for one route in one run, which indicates rate limiting and does not conclusively verify that route's booking experience. Confirm inbox delivery with a real test submission and verify any rate-limited booking route directly in a browser before considering all production flows fully verified.
