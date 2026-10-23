@@ -104,6 +104,32 @@ test("pages that load styles.css use the same cache-busting version", async () =
   assert.notEqual(uniqueVersions[0], "(missing)", "styles.css must have a cache-busting version");
 });
 
+test("all public HTML pages are discoverable from the sitemap", async () => {
+  const sitemap = await readFile(path.join(root, "sitemap.xml"), "utf8");
+  const sitemapPaths = new Set(
+    [...sitemap.matchAll(/<loc>https:\/\/pazzionstylez\.com([^<]*)<\/loc>/gi)]
+      .map(([, urlPath]) => {
+        const normalized = urlPath.replace(/\/$/, "");
+        return normalized || "/";
+      })
+  );
+
+  const missingFromSitemap = [];
+  for (const file of htmlFiles) {
+    const relative = path.relative(root, file).split(path.sep).join("/");
+    if (relative === "404.html") continue;
+    const urlPath = relative === "index.html"
+      ? "/"
+      : relative.endsWith("/index.html")
+        ? "/" + relative.slice(0, -"index.html".length)
+        : "/" + relative;
+    const normalized = urlPath.replace(/\/$/, "") || "/";
+    if (!sitemapPaths.has(normalized)) missingFromSitemap.push(`${relative} -> ${urlPath}`);
+  }
+  assert.deepEqual(missingFromSitemap, [],
+    `Public HTML pages missing from sitemap.xml:\n${missingFromSitemap.join("\n")}`);
+});
+
 test("sitemap URLs point to tracked HTML pages", async () => {
   const sitemapPath = path.join(root, "sitemap.xml");
   const sitemap = await readFile(sitemapPath, "utf8");
