@@ -13,10 +13,18 @@ export function clean(value, max = 2000) {
 }
 
 export function validEmail(value) {
-  return typeof value === "string" && value.length <= 254 &&
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-}
-export function validDate(value) {
+  if (typeof value !== "string" || value.length > 254) return false;
+  const at = value.lastIndexOf("@");
+  if (at < 1 || at > 64 || at === value.length - 1) return false;
+  const local = value.slice(0, at);
+  const domain = value.slice(at + 1);
+  if (/\s/.test(value) || local.includes("..") || domain.includes("..")) return false;
+  const labels = domain.split(".");
+  if (labels.length < 2 || labels.some(label =>
+    !label || label.length > 63 || !/^[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?$/.test(label)
+  )) return false;
+  return true;
+}export function validDate(value) {
   if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const [year, month, day] = value.split("-").map(Number);
   const date = new Date(Date.UTC(year, month - 1, day));
