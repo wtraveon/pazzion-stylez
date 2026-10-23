@@ -26,7 +26,7 @@ export async function onRequestPost({ request, env }) {
   if (topic === "Hair or beauty service" && !["LaToya Terry", "Kottia Cotton", "JahNiqua Speight"].includes(preferred)) {
     return json({ success: false, message: "Please select a preferred stylist for service inquiries." }, 400);
   }
-  if (!(await verifyTurnstile(token, request, env))) {
+  if (!(await verifyTurnstile(token, request, env, "contact"))) {
     return json({ success: false, message: "Spam verification failed. Please complete verification and try again." }, 403);
   }
 
