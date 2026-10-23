@@ -59,7 +59,9 @@ export async function verifyTurnstile(token, request, env) {
       body
     });
     const result = await response.json();
-    return response.ok && result.success === true;
+    const expectedHostname = new URL(request.url).hostname.toLowerCase();
+    const verifiedHostname = typeof result.hostname === "string" ? result.hostname.toLowerCase() : "";
+    return response.ok && result.success === true && verifiedHostname === expectedHostname;
   } catch {
     return false;
   }
