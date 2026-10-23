@@ -44,8 +44,8 @@ Use the specific configuration guidance in [functions/README.md](functions/READM
 
 ## Asset completeness
 
-**Important:** The current tracked repository tree does not contain an `assets/` directory, while the HTML pages reference image files under `assets/images/`. See [ASSET_AUDIT.md](ASSET_AUDIT.md) for the complete list found during the repository scan. Restore the original image assets into those exact paths and commit them before treating the repository as a complete, self-contained copy of the deployed site.
+The tracked repository now contains the `assets/` tree. A recursive audit of the 16 tracked HTML pages found 32 distinct referenced image/media assets and no missing referenced paths. See [ASSET_AUDIT.md](ASSET_AUDIT.md) for the current scan result and remaining unreferenced assets to review.
 
 ## Validation status
 
-The repository structure and local file references have been inspected, but this README is not a claim that production forms, every browser/device, or every external booking flow has been end-to-end tested. Confirm the image assets and Cloudflare environment settings, then test the live forms and booking links after deployment.
+The repository structure and local file references have been inspected, but this README is not a claim that production forms, every browser/device, or every external booking flow has been end-to-end tested. Confirm Cloudflare environment settings, then test the live forms and booking links after deployment. A successful repository asset audit does not by itself confirm that the live deployment is serving the latest commit.
