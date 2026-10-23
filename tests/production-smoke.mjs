@@ -42,6 +42,29 @@ for (const key of ["latoya-new", "latoya-returning", "kottia-new", "kottia-retur
 }
 assert.equal(routes.size, 4, "Unexpected number of online Square booking routes");
 
+// Check the actual Square endpoints as well as the local mapping. Square may
+// challenge automated clients (403/429); those statuses still prove the host
+// was reached. A missing route or server failure is treated as a real failure.
+const squareResults = await Promise.all([...routes.entries()].map(async ([key, url]) => {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, {
+      redirect: "follow",
+      signal: controller.signal,
+      headers: { "user-agent": "Mozilla/5.0 (compatible; PazzionStylez-ProductionSmoke/1.0)" }
+    });
+    assert.ok(
+      ![404, 410].includes(response.status) && response.status < 500,
+      `Square route ${key} returned HTTP ${response.status}: ${url}`
+    );
+    return { key, status: response.status };
+  } finally {
+    clearTimeout(timer);
+  }
+}));
+console.log("Square endpoint reachability:", squareResults.map(({ key, status }) => `${key}=${status}`).join(", "));
+
 const configResponse = await request("/api/form-config", {
   headers: { accept: "application/json" }
 });
