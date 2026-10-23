@@ -111,22 +111,22 @@ test("public HTML pages have unique, nonempty meta descriptions", async () => {
     const relative = path.relative(root, file).split(path.sep).join("/");
     if (relative === "404.html") continue;
     const html = await readFile(file, "utf8");
-    const tag = [...html.matchAll(/<meta\\b[^>]*>/gi)]
+    const tag = [...html.matchAll(/<meta\b[^>]*>/gi)]
       .map(match => match[0])
-      .find(meta => /\\bname=["']description["']/i.test(meta));
-    const description = tag?.match(/\\bcontent=["']([^"']*)["']/i)?.[1]?.trim();
+      .find(meta => /\bname=["']description["']/i.test(meta));
+    const description = tag?.match(/\bcontent=["']([^"']*)["']/i)?.[1]?.trim();
     if (!description) {
       problems.push(`${relative}: missing or empty meta description`);
       continue;
     }
-    const normalized = description.replace(/\\s+/g, " ").toLowerCase();
+    const normalized = description.replace(/\s+/g, " ").toLowerCase();
     if (descriptions.has(normalized)) {
       problems.push(`${relative}: duplicate meta description also used by ${descriptions.get(normalized)}`);
     } else {
       descriptions.set(normalized, relative);
     }
   }
-  assert.deepEqual(problems, [], `Meta description issues:\\n${problems.join("\\n")}`);
+  assert.deepEqual(problems, [], `Meta description issues:\n${problems.join("\n")}`);
 });
 
 test("public HTML pages declare their own canonical URL", async () => {
@@ -140,10 +140,10 @@ test("public HTML pages declare their own canonical URL", async () => {
         ? "/" + relative.slice(0, -"index.html".length)
         : "/" + relative;
     const html = await readFile(file, "utf8");
-    const canonicalTag = [...html.matchAll(/<link\\b[^>]*>/gi)]
+    const canonicalTag = [...html.matchAll(/<link\b[^>]*>/gi)]
       .map(match => match[0])
-      .find(tag => /\\brel=["']canonical["']/i.test(tag));
-    const canonicalHref = canonicalTag?.match(/\\bhref=["']([^"']+)["']/i)?.[1];
+      .find(tag => /\brel=["']canonical["']/i.test(tag));
+    const canonicalHref = canonicalTag?.match(/\bhref=["']([^"']+)["']/i)?.[1];
     let canonicalUrl;
     try {
       canonicalUrl = new URL(canonicalHref);
@@ -157,7 +157,7 @@ test("public HTML pages declare their own canonical URL", async () => {
     }
   }
   assert.deepEqual(missingOrIncorrect, [],
-    `Missing or incorrect canonical URLs:\\n${missingOrIncorrect.join("\\n")}`);
+    `Missing or incorrect canonical URLs:\n${missingOrIncorrect.join("\n")}`);
 });
 
 test("all public HTML pages are discoverable from the sitemap", async () => {
