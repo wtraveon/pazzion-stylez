@@ -92,7 +92,7 @@ test("pages that load styles.css use the same cache-busting version", async () =
   const versions = new Map();
   for (const file of htmlFiles) {
     const html = await readFile(file, "utf8");
-    for (const match of html.matchAll(/<link\\b[^>]*\\bhref=["']([^"']*styles\\.css(?:\\?[^"']*)?)["'][^>]*>/gi)) {
+    for (const match of html.matchAll(/<link\\b[^>]*\\bhref=["']([^"']*styles\.css(?:\\?[^"']*)?)["'][^>]*>/gi)) {
       const url = match[1];
       const version = new URL(url, "https://pazzionstylez.com/").searchParams.get("v");
       versions.set(path.relative(root, file), version || "(missing)");
@@ -107,14 +107,14 @@ test("pages that load styles.css use the same cache-busting version", async () =
 test("sitemap URLs point to tracked HTML pages", async () => {
   const sitemapPath = path.join(root, "sitemap.xml");
   const sitemap = await readFile(sitemapPath, "utf8");
-  const urls = [...sitemap.matchAll(/<loc>(https:\\/\\/pazzionstylez\\.com([^<]*))<\\/loc>/gi)];
+  const urls = [...sitemap.matchAll(/<loc>(https:\/\/pazzionstylez\.com([^<]*))<\/loc>/gi)];
   assert.ok(urls.length > 0, "Expected public URLs in sitemap.xml");
   const missing = [];
   const seen = new Set();
   for (const [, fullUrl, urlPath] of urls) {
     if (seen.has(fullUrl)) missing.push(`duplicate URL: ${fullUrl}`);
     seen.add(fullUrl);
-    const relative = urlPath.replace(/^\\//, "");
+    const relative = urlPath.replace(/^\//, "");
     const target = path.join(root, relative, relative.endsWith(".html") ? "" : "index.html");
     try {
       await access(target);
