@@ -209,5 +209,5 @@ for (const endpoint of ["/api/contact", "/api/photo-release"]) {
   assert.equal(result.success, false, `${endpoint} should reject the invalid test payload`);
 }
 
-console.log("Production smoke checks passed: homepage, current policy, all six Square route mappings, Turnstile config, and both form API validation paths.");
+console.log("Production smoke checks passed: homepage, photo-release stylist options, current policy, all six Square route mappings, Turnstile config, and both form API validation paths.");
 console.log("Note: successful API validation does not prove real email delivery; send a consented test submission from a real browser to verify inbox receipt.");
