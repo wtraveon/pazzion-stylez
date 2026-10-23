@@ -53,9 +53,8 @@ function selectBookingStylist(key,{focusStep=true}={}){
   selectedStylist=key;
   stylistButtons.forEach(button=>button.setAttribute('aria-pressed',button.dataset.stylist===key?'true':'false'));
   if(selectedStylistSummary) selectedStylistSummary.textContent=`You selected ${stylistDisplayName(key)}.`;
-  const requiresDirectContact=key==='jahniqua';
-  if(clientStatusGrid){clientStatusGrid.hidden=requiresDirectContact;clientStatusGrid.style.display=requiresDirectContact?'none':'';}
-  if(jahniquaBookingContact) jahniquaBookingContact.hidden=!requiresDirectContact;
+  if(clientStatusGrid){clientStatusGrid.hidden=false;clientStatusGrid.style.display='';}
+  if(jahniquaBookingContact) jahniquaBookingContact.hidden=true;
   if(bookingStatusStep){bookingStatusStep.hidden=false;if(focusStep) bookingStatusStep.focus();}
   if(bookingStatusMessage) bookingStatusMessage.textContent='';
 }
@@ -69,7 +68,7 @@ function resetBookingStylist(){
   stylistButtons[0]?.focus();
 }
 function openBookingRoute(status){
-  if(!selectedStylist||selectedStylist==='jahniqua') return;
+  if(!selectedStylist) return;
   const key=`${selectedStylist}-${status}`;
   const url=window.PAZZION_BOOKING_ROUTES?.[key]?.trim();
   if(!url){
