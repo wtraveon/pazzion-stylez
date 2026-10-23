@@ -141,6 +141,31 @@ test("HTML pages have unique IDs", async () => {
   assert.deepEqual(duplicates, [], `Duplicate HTML IDs found:\n${duplicates.join("\n")}`);
 });
 
+test("internal page links resolve to existing HTML pages", async () => {
+  const broken = [];
+  for (const file of htmlFiles) {
+    const html = await readFile(file, "utf8");
+    for (const match of html.matchAll(/<a\\b[^>]*\\bhref=["']([^"']+)["'][^>]*>/gi)) {
+      const href = match[1].trim();
+      if (!href || href.startsWith("#") || href.startsWith("//") || /^[a-z][a-z\\d+.-]*:/i.test(href)) continue;
+      const pathname = decodeURIComponent(href.split(/[?#]/, 1)[0]);
+      if (!pathname) continue;
+      let target = pathname.startsWith("/")
+        ? path.join(root, pathname.slice(1))
+        : path.resolve(path.dirname(file), pathname);
+      try {
+        const statPath = target.endsWith(path.sep) || !path.extname(target)
+          ? path.join(target, "index.html")
+          : target;
+        await access(statPath);
+      } catch {
+        broken.push(`${path.relative(root, file)} -> ${href}`);
+      }
+    }
+  }
+  assert.deepEqual(broken, [], `Broken internal page links:\\n${broken.join("\\n")}`);
+});
+
 test("local static asset references resolve to existing files", async () => {
   const missing = [];
   for (const file of htmlFiles) {
