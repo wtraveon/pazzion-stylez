@@ -26,6 +26,8 @@ export function validEmail(value) {
   if (labels.length < 2 || labels.some(label =>
     !label || label.length > 63 || !/^[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?$/.test(label)
   )) return false;
+  // Public email domains must not end in a numeric-only top-level label.
+  if (!/[A-Za-z]/.test(labels[labels.length - 1])) return false;
   return true;
 }
 
