@@ -395,7 +395,7 @@ if(contactForm){
       return;
     }
     if(topic==='Hair or beauty service'&&!preferredStylist){
-      status.textContent='Please choose LaToya Terry or Kottia Cotton as your preferred stylist.';
+      status.textContent='Please choose a preferred stylist.';
       status.classList.add('error');
       preferredStylistField?.focus();
       return;
