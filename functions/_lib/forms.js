@@ -80,6 +80,8 @@ export async function sendEmail(env, subject, html, replyTo) {
       !env.FORM_NOTIFICATION_TO || !env.FROM_EMAIL) {
     return { ok: false, configurationError: true };
   }
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000);
   try {
     const response = await fetch(
       `https://api.cloudflare.com/client/v4/accounts/${env.CLOUDFLARE_ACCOUNT_ID}/email/sending/send`,
@@ -95,7 +97,8 @@ export async function sendEmail(env, subject, html, replyTo) {
           subject,
           html,
           ...(replyTo ? { reply_to: replyTo } : {})
-        })
+        }),
+        signal: controller.signal
       }
     );
     const result = await response.json().catch(() => ({}));
@@ -105,6 +108,8 @@ export async function sendEmail(env, subject, html, replyTo) {
     };
   } catch {
     return { ok: false };
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
