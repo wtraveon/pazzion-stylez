@@ -188,7 +188,7 @@ test("all public HTML pages are discoverable from the sitemap", async () => {
 
 test("sitemap contains only valid canonical production URLs", async () => {
   const sitemap = await readFile(path.join(root, "sitemap.xml"), "utf8");
-  const urls = [...sitemap.matchAll(/<loc>([^<]+)<\\/loc>/gi)].map(([, value]) => value.trim());
+  const urls = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/gi)].map(([, value]) => value.trim());
   assert.ok(urls.length > 0, "Expected at least one URL in sitemap.xml");
   const invalid = [];
   for (const value of urls) {
@@ -204,7 +204,7 @@ test("sitemap contains only valid canonical production URLs", async () => {
       invalid.push(`noncanonical production URL: ${value}`);
     }
   }
-  assert.deepEqual(invalid, [], `Invalid sitemap URLs:\\n${invalid.join("\\n")}`);
+  assert.deepEqual(invalid, [], `Invalid sitemap URLs:\n${invalid.join("\n")}`);
 });
 
 test("sitemap URLs point to tracked HTML pages", async () => {
