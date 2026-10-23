@@ -186,6 +186,27 @@ test("all public HTML pages are discoverable from the sitemap", async () => {
     `Public HTML pages missing from sitemap.xml:\n${missingFromSitemap.join("\n")}`);
 });
 
+test("sitemap contains only valid canonical production URLs", async () => {
+  const sitemap = await readFile(path.join(root, "sitemap.xml"), "utf8");
+  const urls = [...sitemap.matchAll(/<loc>([^<]+)<\\/loc>/gi)].map(([, value]) => value.trim());
+  assert.ok(urls.length > 0, "Expected at least one URL in sitemap.xml");
+  const invalid = [];
+  for (const value of urls) {
+    let url;
+    try {
+      url = new URL(value);
+    } catch {
+      invalid.push(`invalid URL: ${value}`);
+      continue;
+    }
+    if (url.protocol !== "https:" || url.hostname !== "pazzionstylez.com"
+      || url.username || url.password || url.search || url.hash) {
+      invalid.push(`noncanonical production URL: ${value}`);
+    }
+  }
+  assert.deepEqual(invalid, [], `Invalid sitemap URLs:\\n${invalid.join("\\n")}`);
+});
+
 test("sitemap URLs point to tracked HTML pages", async () => {
   const sitemapPath = path.join(root, "sitemap.xml");
   const sitemap = await readFile(sitemapPath, "utf8");
