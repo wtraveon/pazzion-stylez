@@ -40,8 +40,8 @@ assert.match(homepageResponse.headers.get("strict-transport-security") || "", /m
   "Live homepage should send HSTS with a one-year max-age");
 
 const robots = await getText("/robots.txt");
-assert.match(robots, /Disallow:\\s*\\/api\\//, "Live robots.txt should disallow API paths");
-assert.match(robots, /Sitemap:\\s*https:\\/\\/pazzionstylez\\.com\\/sitemap\\.xml/, "Live robots.txt should point to the production sitemap");
+assert.ok(robots.includes("Disallow: /api/"), "Live robots.txt should disallow API paths");
+assert.ok(robots.includes("Sitemap: https://pazzionstylez.com/sitemap.xml"), "Live robots.txt should point to the production sitemap");
 
 const policyPage = await getText("/policies/");
 assert.match(policyPage, /does not require deposits for services or consultations/i,
