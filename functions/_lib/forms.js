@@ -60,11 +60,14 @@ export async function verifyTurnstile(token, request, env) {
   body.set("response", token);
   const ip = request.headers.get("CF-Connecting-IP");
   if (ip) body.set("remoteip", ip);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5000);
   try {
     const response = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body
+      body,
+      signal: controller.signal
     });
     const result = await response.json();
     const expectedHostname = new URL(request.url).hostname.toLowerCase();
@@ -72,6 +75,8 @@ export async function verifyTurnstile(token, request, env) {
     return response.ok && result.success === true && verifiedHostname === expectedHostname;
   } catch {
     return false;
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
