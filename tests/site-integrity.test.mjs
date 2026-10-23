@@ -40,6 +40,11 @@ test("JahNiqua is selectable in booking and has a working direct-contact fallbac
     "Selecting JahNiqua should hide the LaToya/Kottia online booking status options");
   assert.match(script, /jahniquaBookingContact\.hidden=key!=='jahniqua'/,
     "Selecting JahNiqua should show her direct appointment contact panel");
+  assert.match(script, /new URLSearchParams\(window\.location\.search\)\.get\('stylist'\)/,
+    "Profile appointment links should be able to preselect a stylist on the homepage");
+  const jahProfile = await readFile(path.join(root, "team", "jahniqua-speight", "index.html"), "utf8");
+  assert.match(jahProfile, /href="\/?\?stylist=jahniqua#booking"/,
+    "JahNiqua's profile should link to her preselected appointment contact flow");
   assert.doesNotMatch(routes, /jahniqua-(?:new|returning)/i,
     "Do not invent Square booking routes for JahNiqua without her confirmed booking URLs");
 });
