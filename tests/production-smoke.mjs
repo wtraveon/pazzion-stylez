@@ -151,6 +151,10 @@ for (const endpoint of ["/api/contact", "/api/photo-release"]) {
   assert.equal(response.status, 400, `${endpoint} should reject an empty payload with HTTP 400, got ${response.status}`);
   assert.match(response.headers.get("content-type") || "", /application\/json/i,
     `${endpoint} should return JSON validation errors`);
+  assert.equal(response.headers.get("cache-control"), "no-store",
+    `${endpoint} must not cache form validation responses`);
+  assert.equal(response.headers.get("x-content-type-options"), "nosniff",
+    `${endpoint} must set X-Content-Type-Options: nosniff`);
   const result = await response.json();
   assert.equal(result.success, false, `${endpoint} should reject the invalid test payload`);
 }
