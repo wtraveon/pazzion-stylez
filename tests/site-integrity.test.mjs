@@ -508,7 +508,7 @@ test("local CSS url() assets resolve to existing files", async () => {
 
 
 test("photo-release page does not expose internal reconstruction notes", async () => {
-  const html = await read("photo-release/index.html");
+  const html = await readFile(path.join(root, "photo-release", "index.html"), "utf8");
   assert.doesNotMatch(html, /reconstructed from available .*source files|original standalone page wording was not recovered|form configuration, spam-protection settings, and server endpoint being deployed and tested/i,
     "Public photo-release page should not expose internal implementation history");
 });
