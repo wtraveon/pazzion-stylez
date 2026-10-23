@@ -404,14 +404,15 @@ test("deployment security headers and robots sitemap declaration stay configured
 });
 
 
+
 test("product cards disclose that Square links open the general storefront", async () => {
   const productPage = await readFile(path.join(root, "products", "index.html"), "utf8");
-  const tiles = [...productPage.matchAll(/<article class="ps-product-tile">([\\s\\S]*?)<\\/article>/gi)].map(([, tile]) => tile);
+  const tiles = [...productPage.matchAll(/<article class="ps-product-tile">([\s\S]*?)<\/article>/gi)].map(([, tile]) => tile);
   assert.equal(tiles.length, 10, "Expected all ten product tiles to be present");
   for (const tile of tiles) {
-    assert.match(tile, /href="https:\\/\\/pazzion-stylez-llc\\.square\\.site\\/"[^>]*aria-label="Open the Square store to find [^"]+"/i,
+    assert.match(tile, /href="https:\/\/pazzion-stylez-llc\.square\.site\/"[^>]*aria-label="Open the Square store to find [^"]+"/i,
       "Product image links should clearly state that Square opens the storefront");
-    assert.match(tile, />Browse Square store <span aria-hidden="true">↗<\\/span>/i,
+    assert.match(tile, />Browse Square store <span aria-hidden="true">↗<\/span>/i,
       "Product CTA should not imply a product-specific checkout destination");
   }
   assert.match(productPage, /opens the Square storefront, not a product-specific checkout page/i,
