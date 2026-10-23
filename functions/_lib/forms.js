@@ -59,7 +59,7 @@ export function emailHtml(title, fields, recordId) {
   return `<!doctype html><html><body style="font-family:Arial,sans-serif;color:#222"><h2>${escapeHtml(title)}</h2><p>Reference: <strong>${escapeHtml(recordId)}</strong></p><table style="border-collapse:collapse;width:100%;max-width:760px">${rows}</table><p style="color:#666;font-size:12px">Submitted through the Pazzion Stylez website. Store this message securely and follow your applicable retention practices.</p></body></html>`;
 }
 
-export async function verifyTurnstile(token, request, env) {
+export async function verifyTurnstile(token, request, env, expectedAction) {
   if (!env.TURNSTILE_SECRET_KEY || !env.TURNSTILE_SITE_KEY || !token) return false;
   const body = new URLSearchParams();
   body.set("secret", env.TURNSTILE_SECRET_KEY);
@@ -78,7 +78,8 @@ export async function verifyTurnstile(token, request, env) {
     const result = await response.json();
     const expectedHostname = new URL(request.url).hostname.toLowerCase();
     const verifiedHostname = typeof result.hostname === "string" ? result.hostname.toLowerCase() : "";
-    return response.ok && result.success === true && verifiedHostname === expectedHostname;
+    return response.ok && result.success === true &&
+      verifiedHostname === expectedHostname && result.action === expectedAction;
   } catch {
     return false;
   } finally {
