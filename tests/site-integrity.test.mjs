@@ -138,7 +138,7 @@ test("deployment security headers and robots sitemap declaration stay configured
   }
 
   const robots = await readFile(path.join(root, "robots.txt"), "utf8");
-  assert.match(robots, /^User-agent:\\s*\\*/m, "robots.txt should define rules for all crawlers");
-  assert.match(robots, /^Disallow:\\s*\\/api\\//m, "robots.txt should keep API endpoints out of crawler discovery");
-  assert.match(robots, /^Sitemap:\\s*https:\\/\\/pazzionstylez\\.com\\/sitemap\\.xml\\s*$/m, "robots.txt should declare the production sitemap");
+  assert.match(robots, /^User-agent:\s*\\*/m, "robots.txt should define rules for all crawlers");
+  assert.match(robots, /^Disallow:\s*\\/api\\//m, "robots.txt should keep API endpoints out of crawler discovery");
+  assert.match(robots, /^Sitemap:\s*https:\\/\\/pazzionstylez\\.com\\/sitemap\\.xml\s*$/m, "robots.txt should declare the production sitemap");
 });
