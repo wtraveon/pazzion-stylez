@@ -24,8 +24,24 @@ async function getText(path) {
   return response.text();
 }
 
-const homepage = await getText("/");
+const homepageResponse = await request("/");
+assert.equal(homepageResponse.status, 200, `Homepage returned HTTP ${homepageResponse.status}`);
+const homepage = await homepageResponse.text();
 assert.match(homepage, /<title>[^<]*Pazzion Stylez/i, "Homepage title should identify Pazzion Stylez");
+
+for (const [header, expected] of [
+  ["x-content-type-options", "nosniff"],
+  ["x-frame-options", "DENY"],
+  ["referrer-policy", "strict-origin-when-cross-origin"]
+]) {
+  assert.equal(homepageResponse.headers.get(header), expected, `Live homepage must send ${header}: ${expected}`);
+}
+assert.match(homepageResponse.headers.get("strict-transport-security") || "", /max-age=31536000/,
+  "Live homepage should send HSTS with a one-year max-age");
+
+const robots = await getText("/robots.txt");
+assert.match(robots, /Disallow:\\s*\\/api\\//, "Live robots.txt should disallow API paths");
+assert.match(robots, /Sitemap:\\s*https:\\/\\/pazzionstylez\\.com\\/sitemap\\.xml/, "Live robots.txt should point to the production sitemap");
 
 const policyPage = await getText("/policies/");
 assert.match(policyPage, /does not require deposits for services or consultations/i,
