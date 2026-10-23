@@ -58,7 +58,9 @@ assert.match(jahProfile, /href=["']sms:\+12523159963["']/i,
   "Live JahNiqua profile should expose her text option");
 assert.match(jahProfile, /href=["']mailto:jspeight13@yahoo\.com["']/i,
   "Live JahNiqua profile should expose her email option");
-const bookingScript = await getText("/script.js?v=20261023-1638");
+const bookingScriptPath = homepage.match(/<script\\b[^>]*\\bsrc=["\']([^"\']*script\\.js(?:\\?[^"\']*)?)["\'][^>]*>/i)?.[1];
+assert.ok(bookingScriptPath, "Live homepage should load the booking script");
+const bookingScript = await getText(bookingScriptPath);
 assert.match(bookingScript, /new URLSearchParams\(window\.location\.search\)\.get\('stylist'\)/,
   "Live booking script should support stylist preselection from profile links");
 
