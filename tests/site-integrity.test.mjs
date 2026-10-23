@@ -507,6 +507,12 @@ test("local CSS url() assets resolve to existing files", async () => {
 });
 
 
+test("photo-release page does not expose internal reconstruction notes", async () => {
+  const html = await read("photo-release/index.html");
+  assert.doesNotMatch(html, /reconstructed from available .*source files|original standalone page wording was not recovered|form configuration, spam-protection settings, and server endpoint being deployed and tested/i,
+    "Public photo-release page should not expose internal implementation history");
+});
+
 test("photo-release form and API both support every current stylist", async () => {
   const releasePage = await readFile(path.join(root, "photo-release", "index.html"), "utf8");
   const releaseApi = await readFile(path.join(root, "functions", "api", "photo-release.js"), "utf8");
