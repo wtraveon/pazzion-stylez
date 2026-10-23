@@ -58,7 +58,7 @@ assert.match(jahProfile, /href=["']sms:\+12523159963["']/i,
   "Live JahNiqua profile should expose her text option");
 assert.match(jahProfile, /href=["']mailto:jspeight13@yahoo\.com["']/i,
   "Live JahNiqua profile should expose her email option");
-const bookingScriptPath = homepage.match(/<script\\b[^>]*\\bsrc=["\']([^"\']*script\\.js(?:\\?[^"\']*)?)["\'][^>]*>/i)?.[1];
+const bookingScriptPath = homepage.match(/<script\b[^>]*\bsrc=["']([^"']*script\.js(?:\?[^"']*)?)["'][^>]*>/i)?.[1];
 assert.ok(bookingScriptPath, "Live homepage should load the booking script");
 const bookingScript = await getText(bookingScriptPath);
 assert.match(bookingScript, /new URLSearchParams\(window\.location\.search\)\.get\('stylist'\)/,
@@ -121,7 +121,7 @@ assert.match(policyPage, /No deposit is collected, so there is no deposit to for
   "Live no-show policy must not contradict the no-deposit policy");
 
 const bookingRoutesSource = await getText("/booking-routes.js");
-const routePairs = [...bookingRoutesSource.matchAll(/['"](latoya-new|latoya-returning|kottia-new|kottia-returning)['"]\s*:\s*['"](https:\/\/book\.squareup\.com\/appointments\/[^'"]+)['"]/g)];
+const routePairs = [...bookingRoutesSource.matchAll(/['"](latoya-new|latoya-returning|kottia-new|kottia-returning|jahniqua-new|jahniqua-returning)['"]\s*:\s*['"](https:\/\/(?:book|app)\.squareup\.com\/appointments\/[^'"]+)['"]/g)];
 const routes = new Map(routePairs.map(([, key, url]) => [key, url]));
 for (const key of ["latoya-new", "latoya-returning", "kottia-new", "kottia-returning", "jahniqua-new", "jahniqua-returning"]) {
   assert.ok(routes.has(key), `Missing live Square booking route: ${key}`);
