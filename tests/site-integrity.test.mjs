@@ -104,6 +104,37 @@ test("pages that load styles.css use the same cache-busting version", async () =
   assert.notEqual(uniqueVersions[0], "(missing)", "styles.css must have a cache-busting version");
 });
 
+test("public HTML pages declare their own canonical URL", async () => {
+  const missingOrIncorrect = [];
+  for (const file of htmlFiles) {
+    const relative = path.relative(root, file).split(path.sep).join("/");
+    if (relative === "404.html") continue;
+    const expectedPath = relative === "index.html"
+      ? "/"
+      : relative.endsWith("/index.html")
+        ? "/" + relative.slice(0, -"index.html".length)
+        : "/" + relative;
+    const html = await readFile(file, "utf8");
+    const canonicalTag = [...html.matchAll(/<link\\b[^>]*>/gi)]
+      .map(match => match[0])
+      .find(tag => /\\brel=["']canonical["']/i.test(tag));
+    const canonicalHref = canonicalTag?.match(/\\bhref=["']([^"']+)["']/i)?.[1];
+    let canonicalUrl;
+    try {
+      canonicalUrl = new URL(canonicalHref);
+    } catch {
+      missingOrIncorrect.push(`${relative}: missing or invalid canonical URL`);
+      continue;
+    }
+    if (canonicalUrl.origin !== "https://pazzionstylez.com" || canonicalUrl.pathname !== expectedPath
+      || canonicalUrl.search || canonicalUrl.hash) {
+      missingOrIncorrect.push(`${relative}: expected https://pazzionstylez.com${expectedPath}, got ${canonicalHref}`);
+    }
+  }
+  assert.deepEqual(missingOrIncorrect, [],
+    `Missing or incorrect canonical URLs:\\n${missingOrIncorrect.join("\\n")}`);
+});
+
 test("all public HTML pages are discoverable from the sitemap", async () => {
   const sitemap = await readFile(path.join(root, "sitemap.xml"), "utf8");
   const sitemapPaths = new Set(
