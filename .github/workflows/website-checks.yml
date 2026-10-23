@@ -1,0 +1,30 @@
+name: Website checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  form-validation-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run form helper regression tests
+        run: node --experimental-default-type=module --test tests/forms.test.mjs
+      - name: Check JavaScript syntax
+        run: |
+          node --check script.js
+          node --experimental-default-type=module --check < functions/_lib/forms.js
+          node --experimental-default-type=module --check < functions/api/contact.js
+          node --experimental-default-type=module --check < functions/api/photo-release.js
+          node --experimental-default-type=module --check < functions/api/form-config.js
