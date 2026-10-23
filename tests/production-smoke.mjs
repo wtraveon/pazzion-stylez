@@ -60,7 +60,7 @@ assert.match(jahProfile, /href=["']mailto:jspeight13@yahoo\.com["']/i,
   "Live JahNiqua profile should expose her email option");
 assert.match(homepage, /Select LaToya, Kottia, or JahNiqua to continue to that stylist[’']s Square booking page/i,
   "Live homepage should explain that all three stylists have online Square booking");
-assert.doesNotMatch(homepage, /online booking link is not configured|select LaToya or Kottia to continue to online booking|contact JahNiqua Speight directly to confirm her services and availability/i,
+assert.doesNotMatch(homepage, /online booking link is not configured|select LaToya or Kottia to continue to online booking|contact JahNiqua Speight directly to confirm her services and availability|To arrange an appointment with JahNiqua, contact her directly/i,
   "Live homepage must not show outdated JahNiqua booking instructions");
 const jahProfile = await getText("/team/jahniqua-speight/");
 assert.match(jahProfile, /continue to JahNiqua[’']s Square booking page/i,
