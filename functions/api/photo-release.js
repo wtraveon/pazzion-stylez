@@ -73,7 +73,7 @@ export async function onRequestPost({ request, env }) {
   if (serviceDate && !validDate(serviceDate)) {
     return json({ success: false, message: "Please enter a valid service date." }, 400);
   }
-  if (!(await verifyTurnstile(token, request, env))) {
+  if (!(await verifyTurnstile(token, request, env, "photo_release"))) {
     return json({ success: false, message: "Spam verification failed. Please complete verification and try again." }, 403);
   }
 
