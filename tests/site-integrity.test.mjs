@@ -402,3 +402,18 @@ test("deployment security headers and robots sitemap declaration stay configured
   assert.ok(robots.includes("Disallow: /api/"), "robots.txt should keep API endpoints out of crawler discovery");
   assert.ok(robots.includes("Sitemap: https://pazzionstylez.com/sitemap.xml"), "robots.txt should declare the production sitemap");
 });
+
+
+test("product cards disclose that Square links open the general storefront", async () => {
+  const productPage = await readFile(path.join(root, "products", "index.html"), "utf8");
+  const tiles = [...productPage.matchAll(/<article class="ps-product-tile">([\\s\\S]*?)<\\/article>/gi)].map(([, tile]) => tile);
+  assert.equal(tiles.length, 10, "Expected all ten product tiles to be present");
+  for (const tile of tiles) {
+    assert.match(tile, /href="https:\\/\\/pazzion-stylez-llc\\.square\\.site\\/"[^>]*aria-label="Open the Square store to find [^"]+"/i,
+      "Product image links should clearly state that Square opens the storefront");
+    assert.match(tile, />Browse Square store <span aria-hidden="true">↗<\\/span>/i,
+      "Product CTA should not imply a product-specific checkout destination");
+  }
+  assert.match(productPage, /opens the Square storefront, not a product-specific checkout page/i,
+    "The product page should explain that shoppers need to find the item in the Square storefront");
+});
