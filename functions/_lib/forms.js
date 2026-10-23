@@ -38,8 +38,11 @@ export function validEmail(value) {
 
 export function validPhone(value) {
   if (!value) return true;
-  if (!/^[+()\d.\s-]{7,25}$/.test(value)) return false;
-  const digits = value.replace(/\D/g, "");
+  const match = value.match(/^(.*?)(?:\s*(?:ext\.?|x)\s*(\d{1,6}))?$/i);
+  if (!match) return false;
+  const base = match[1].trim();
+  if (!/^[+()\d.\s-]{7,25}$/.test(base)) return false;
+  const digits = base.replace(/\D/g, "");
   return digits.length >= 7 && digits.length <= 15;
 }
 
