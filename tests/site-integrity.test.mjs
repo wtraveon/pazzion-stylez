@@ -38,10 +38,10 @@ test("JahNiqua is selectable for Square online booking with direct-contact alter
     "JahNiqua's contact panel should include her text link");
   assert.match(homepage, /href="mailto:jspeight13@yahoo\.com"/i,
     "JahNiqua's contact panel should include her email link");
-  assert.match(script, /key==='jahniqua'\?'none':''/,
-    "Selecting JahNiqua should hide the LaToya/Kottia online booking status options");
-  assert.match(script, /jahniquaBookingContact\.hidden=key!=='jahniqua'/,
-    "Selecting JahNiqua should show her direct appointment contact panel");
+  assert.match(script, /clientStatusGrid\.hidden=false/,
+    "Selecting JahNiqua should keep the standard new/returning client options visible");
+  assert.match(script, /jahniquaBookingContact\.hidden=true/,
+    "Selecting JahNiqua should not replace online booking with the old contact-only panel");
   assert.match(script, /new URLSearchParams\(window\.location\.search\)\.get\('stylist'\)/,
     "Profile appointment links should be able to preselect a stylist on the homepage");
   const jahProfile = await readFile(path.join(root, "team", "jahniqua-speight", "index.html"), "utf8");
