@@ -89,13 +89,38 @@ export async function sendEmail(env, subject, html, replyTo) {
 export async function readJson(request) {
   const type = request.headers.get("Content-Type") || "";
   if (!type.toLowerCase().includes("application/json")) return null;
-  const length = Number(request.headers.get("Content-Length") || 0);
-  if (length > 20000) return null;
+
+  const maxBytes = 20000;
+  const declaredLength = Number(request.headers.get("Content-Length") || 0);
+  if (declaredLength > maxBytes || !request.body) return null;
+
+  // Enforce the limit while reading, including requests without Content-Length.
+  const reader = request.body.getReader();
+  const chunks = [];
+  let totalBytes = 0;
   try {
-    const data = await request.json();
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      totalBytes += value.byteLength;
+      if (totalBytes > maxBytes) {
+        await reader.cancel();
+        return null;
+      }
+      chunks.push(value);
+    }
+    const bytes = new Uint8Array(totalBytes);
+    let offset = 0;
+    for (const chunk of chunks) {
+      bytes.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
+    const data = JSON.parse(new TextDecoder().decode(bytes));
     return data && typeof data === "object" && !Array.isArray(data) ? data : null;
   } catch {
     return null;
+  } finally {
+    reader.releaseLock();
   }
 }
 
