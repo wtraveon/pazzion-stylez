@@ -79,6 +79,23 @@ test("visible form controls have accessible labels", async () => {
   assert.deepEqual(problems, [], `Form controls missing accessible labels:\n${problems.join("\n")}`);
 });
 
+test("links opening new tabs protect the opener", async () => {
+  const unsafe = [];
+  for (const file of htmlFiles) {
+    const html = await readFile(file, "utf8");
+    for (const match of html.matchAll(/<a\b[^>]*>/gi)) {
+      const tag = match[0];
+      if (!/\btarget=["']_blank["']/i.test(tag)) continue;
+      const rel = tag.match(/\brel=["']([^"']*)["']/i)?.[1] || "";
+      const tokens = rel.toLowerCase().split(/\s+/);
+      if (!tokens.includes("noopener") && !tokens.includes("noreferrer")) {
+        unsafe.push(path.relative(root, file) + ": " + tag.slice(0, 180));
+      }
+    }
+  }
+  assert.deepEqual(unsafe, [], "Links with target=\"_blank\" must include rel=\"noopener\" or rel=\"noreferrer\":\n" + unsafe.join("\n"));
+});
+
 test("HTML pages have unique IDs", async () => {
   const duplicates = [];
   for (const file of htmlFiles) {
