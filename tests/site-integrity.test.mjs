@@ -34,8 +34,8 @@ test("all HTML images declare an alt attribute", async () => {
   const missingAlt = [];
   for (const file of htmlFiles) {
     const html = await readFile(file, "utf8");
-    for (const match of html.matchAll(/<img\\b[^>]*>/gi)) {
-      if (!/\\balt\\s*=/i.test(match[0])) {
+    for (const match of html.matchAll(/<img\b[^>]*>/gi)) {
+      if (!/\balt\s*=/i.test(match[0])) {
         missingAlt.push(`${path.relative(root, file)}: ${match[0].slice(0, 140)}`);
       }
     }
@@ -50,7 +50,7 @@ test("each public HTML page has exactly one primary heading", async () => {
     const relative = path.relative(root, file).split(path.sep).join("/");
     if (relative === "404.html") continue;
     const html = await readFile(file, "utf8");
-    const count = [...html.matchAll(/<h1\\b[^>]*>/gi)].length;
+    const count = [...html.matchAll(/<h1\b[^>]*>/gi)].length;
     if (count !== 1) invalid.push(`${relative}: found ${count} h1 elements`);
   }
   assert.deepEqual(invalid, [],
