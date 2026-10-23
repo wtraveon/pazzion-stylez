@@ -51,6 +51,8 @@ assert.equal(new Set(sitemapUrls).size, sitemapUrls.length, "Live sitemap should
 assert.ok(sitemapUrls.every(url => url.startsWith("https://pazzionstylez.com/")),
   "Live sitemap URLs should stay on the canonical HTTPS domain");
 
+const liveDescriptions = new Map();
+
 const publishedPageResults = await Promise.all(sitemapUrls.map(async url => {
   const parsed = new URL(url);
   const response = await request(parsed.pathname + parsed.search);
@@ -59,6 +61,15 @@ const publishedPageResults = await Promise.all(sitemapUrls.map(async url => {
     `Sitemap page ${parsed.pathname} should return HTML`);
   const html = await response.text();
   assert.match(html, /<title>[^<]+<\/title>/i, `Sitemap page ${parsed.pathname} should have a page title`);
+  const descriptionTag = [...html.matchAll(/<meta\\b[^>]*>/gi)]
+    .map(match => match[0])
+    .find(tag => /\\bname=["']description["']/i.test(tag));
+  const description = descriptionTag?.match(/\\bcontent=["']([^"']*)["']/i)?.[1]?.trim();
+  assert.ok(description, `Sitemap page ${parsed.pathname} should have a nonempty meta description`);
+  const normalizedDescription = description.replace(/\\s+/g, " ").toLowerCase();
+  assert.ok(!liveDescriptions.has(normalizedDescription),
+    `Sitemap page ${parsed.pathname} duplicates the meta description on ${liveDescriptions.get(normalizedDescription)}`);
+  liveDescriptions.set(normalizedDescription, parsed.pathname);
   const canonicalMatch = html.match(/<link\b[^>]*\brel=["']canonical["'][^>]*\bhref=["']([^"']+)["'][^>]*>/i)
     || html.match(/<link\b[^>]*\bhref=["']([^"']+)["'][^>]*\brel=["']canonical["'][^>]*>/i);
   assert.ok(canonicalMatch, `Sitemap page ${parsed.pathname} should declare a canonical URL`);
