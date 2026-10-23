@@ -51,6 +51,18 @@ assert.equal(new Set(sitemapUrls).size, sitemapUrls.length, "Live sitemap should
 assert.ok(sitemapUrls.every(url => url.startsWith("https://pazzionstylez.com/")),
   "Live sitemap URLs should stay on the canonical HTTPS domain");
 
+const publishedPageResults = await Promise.all(sitemapUrls.map(async url => {
+  const parsed = new URL(url);
+  const response = await request(parsed.pathname + parsed.search);
+  assert.equal(response.status, 200, `Sitemap page ${parsed.pathname} returned HTTP ${response.status}`);
+  assert.match(response.headers.get("content-type") || "", /text\/html/i,
+    `Sitemap page ${parsed.pathname} should return HTML`);
+  const html = await response.text();
+  assert.match(html, /<title>[^<]+<\/title>/i, `Sitemap page ${parsed.pathname} should have a page title`);
+  return parsed.pathname;
+}));
+console.log(`Published sitemap pages verified: ${publishedPageResults.length}`);
+
 const policyPage = await getText("/policies/");
 assert.match(policyPage, /does not require deposits for services or consultations/i,
   "Live policy page must state that services and consultations do not require deposits");
