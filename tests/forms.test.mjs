@@ -164,3 +164,37 @@ test("sendEmail reports provider rejection without exposing provider details", a
     globalThis.fetch = originalFetch;
   }
 });
+
+
+test("sendEmail treats non-JSON provider responses as a failed delivery", async () => {
+  const originalFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async () => new Response("upstream unavailable", { status: 502 });
+    const result = await sendEmail({
+      CLOUDFLARE_ACCOUNT_ID: "account",
+      CLOUDFLARE_EMAIL_API_TOKEN: "token",
+      FORM_NOTIFICATION_TO: "salon@example.com",
+      FROM_EMAIL: "website@example.com"
+    }, "Subject", "<p>Body</p>");
+    assert.deepEqual(result, { ok: false, id: null });
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("verifyTurnstile rejects provider errors and malformed responses", async () => {
+  const originalFetch = globalThis.fetch;
+  const request = new Request("https://pazzionstylez.com/api/contact", { method: "POST" });
+  const env = { TURNSTILE_SITE_KEY: "site-key", TURNSTILE_SECRET_KEY: "secret" };
+  try {
+    globalThis.fetch = async () => new Response(JSON.stringify({
+      success: false, hostname: "pazzionstylez.com", action: "contact"
+    }), { status: 200 });
+    assert.equal(await verifyTurnstile("token", request, env, "contact"), false);
+
+    globalThis.fetch = async () => new Response("not json", { status: 502 });
+    assert.equal(await verifyTurnstile("token", request, env, "contact"), false);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
