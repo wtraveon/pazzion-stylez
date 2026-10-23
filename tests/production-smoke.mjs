@@ -61,12 +61,12 @@ const publishedPageResults = await Promise.all(sitemapUrls.map(async url => {
     `Sitemap page ${parsed.pathname} should return HTML`);
   const html = await response.text();
   assert.match(html, /<title>[^<]+<\/title>/i, `Sitemap page ${parsed.pathname} should have a page title`);
-  const descriptionTag = [...html.matchAll(/<meta\\b[^>]*>/gi)]
+  const descriptionTag = [...html.matchAll(/<meta\b[^>]*>/gi)]
     .map(match => match[0])
-    .find(tag => /\\bname=["']description["']/i.test(tag));
-  const description = descriptionTag?.match(/\\bcontent=["']([^"']*)["']/i)?.[1]?.trim();
+    .find(tag => /\bname=["']description["']/i.test(tag));
+  const description = descriptionTag?.match(/\bcontent=["']([^"']*)["']/i)?.[1]?.trim();
   assert.ok(description, `Sitemap page ${parsed.pathname} should have a nonempty meta description`);
-  const normalizedDescription = description.replace(/\\s+/g, " ").toLowerCase();
+  const normalizedDescription = description.replace(/\s+/g, " ").toLowerCase();
   assert.ok(!liveDescriptions.has(normalizedDescription),
     `Sitemap page ${parsed.pathname} duplicates the meta description on ${liveDescriptions.get(normalizedDescription)}`);
   liveDescriptions.set(normalizedDescription, parsed.pathname);
