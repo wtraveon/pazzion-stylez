@@ -21,7 +21,7 @@ async function walk(directory) {
 const htmlFiles = await walk(root);
 const assetExtensions = /\.(?:css|js|mjs|png|jpe?g|webp|gif|svg|ico|woff2?|ttf|mp4|webm|pdf)$/i;
 
-test("JahNiqua is selectable in booking and has a working direct-contact fallback", async () => {
+test("JahNiqua is selectable for Square online booking with direct-contact alternatives", async () => {
   const homepage = await readFile(path.join(root, "index.html"), "utf8");
   const script = await readFile(path.join(root, "script.js"), "utf8");
   const routes = await readFile(path.join(root, "booking-routes.js"), "utf8");
@@ -47,8 +47,10 @@ test("JahNiqua is selectable in booking and has a working direct-contact fallbac
   const jahProfile = await readFile(path.join(root, "team", "jahniqua-speight", "index.html"), "utf8");
   assert.match(jahProfile, /href="\/?\?stylist=jahniqua#booking"/,
     "JahNiqua's profile should link to her preselected appointment contact flow");
-  assert.doesNotMatch(routes, /jahniqua-(?:new|returning)/i,
-    "Do not invent Square booking routes for JahNiqua without her confirmed booking URLs");
+  assert.match(routes, /'jahniqua-new':'https:\/\/app\.squareup\.com\/appointments\/book\/ef1b6as8wcy0qo\/L2AJM4D8EM6SZ\/start'/,
+    "JahNiqua new-client booking should use her confirmed Square URL");
+  assert.match(routes, /'jahniqua-returning':'https:\/\/app\.squareup\.com\/appointments\/book\/ef1b6as8wcy0qo\/L2AJM4D8EM6SZ\/start'/,
+    "JahNiqua returning-client booking should use her confirmed Square URL");
 });
 
 
