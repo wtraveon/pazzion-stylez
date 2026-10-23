@@ -109,8 +109,8 @@ export async function sendEmail(env, subject, html, replyTo) {
 }
 
 export async function readJson(request) {
-  const type = request.headers.get("Content-Type") || "";
-  if (!type.toLowerCase().includes("application/json")) return null;
+  const type = (request.headers.get("Content-Type") || "").split(";", 1)[0].trim().toLowerCase();
+  if (type !== "application/json") return null;
 
   const maxBytes = 20000;
   const declaredLength = Number(request.headers.get("Content-Length") || 0);
