@@ -522,3 +522,170 @@ test("photo-release form and API both support every current stylist", async () =
     assert.ok(releaseApi.includes('"' + stylist + '"'), "Photo-release API should accept " + stylist);
   }
 });
+
+
+test("contact, consultation, and booking fallback links are present", async () => {
+  const homepage = await readFile(path.join(root, "index.html"), "utf8");
+  const policy = await readFile(path.join(root, "policies", "index.html"), "utf8");
+  const script = await readFile(path.join(root, "script.js"), "utf8");
+
+  assert.ok(homepage.includes('href="tel:+12524681243"'),
+    "The primary salon phone must be available as a tap-to-call link");
+  assert.ok(homepage.includes('href="sms:+12524681243"'),
+    "The consultation section must provide a text fallback");
+  assert.ok(homepage.includes('Online stylist routing requires JavaScript') &&
+    homepage.includes('href="tel:+12524681243"'),
+    "Booking must have a phone fallback when JavaScript is unavailable");
+  assert.ok(homepage.includes('id="bookingStatusMessage"') &&
+    homepage.includes('aria-live="polite"'),
+    "Booking errors must be announced accessibly");
+  assert.ok(script.includes('Online booking for this selection is temporarily unavailable') &&
+    script.includes('252-468-1243'),
+    "Runtime booking failures must offer the salon phone fallback");
+  assert.ok(homepage.includes('id="contactForm"') && homepage.includes('action="/api/contact"'),
+    "The contact form must submit to the contact API");
+  assert.ok(homepage.includes('For appointments, use Book Appointment') &&
+    homepage.includes('choose your stylist'),
+    "The contact form must distinguish messages from appointment booking");
+  assert.ok(homepage.includes('href="/policies/"'),
+    "The homepage must link to the published salon policies");
+  assert.ok(policy.includes('No deposit is required') && policy.includes('$25 consultation'),
+    "The policy page must state the no-deposit rule and new-client consultation fee");
+  for (const contact of [
+    'href="tel:+12524681243"',
+    'href="tel:+12522940280"',
+    'href="tel:+12523159963"',
+    'href="mailto:jspeight13@yahoo.com"'
+  ]) {
+    assert.ok(homepage.includes(contact), `Expected stylist or salon contact link: ${contact}`);
+  }
+});
+
+
+test("keyboard users have visible focus, a skip link, and reduced-motion support", async () => {
+  const homepage = await readFile(path.join(root, "index.html"), "utf8");
+  const css = await readFile(path.join(root, "styles.css"), "utf8");
+
+  assert.match(homepage, /<a[^>]*class=["'][^"']*skip-link[^"']*["'][^>]*href=["']#main["']/i,
+    "Homepage should provide a skip link to main content");
+  assert.match(css, /:where\(a,button,summary,input,select,textarea\):focus-visible\s*\{[^}]*outline:\s*3px solid[^}]*box-shadow:\s*0 0 0 6px/i,
+    "Keyboard focus should have a visible two-tone indicator on interactive controls");
+  assert.match(css, /prefers-reduced-motion:\s*reduce/i,
+    "Animations and smooth scrolling should respect reduced-motion preferences");
+});
+
+test("gallery lightbox supports Escape, confines Tab focus, and restores focus", async () => {
+  const script = await readFile(path.join(root, "script.js"), "utf8");
+
+  assert.match(script, /if\(event\.key==='Escape'\)\s*\{[\s\S]*?closeLightbox\(\)/,
+    "Escape should close the gallery lightbox");
+  assert.match(script, /if\(event\.key==='Tab'\)\s*\{\s*event\.preventDefault\(\);\s*lightboxClose\.focus\(\);/,
+    "Tab should keep keyboard focus inside the lightbox");
+  assert.match(script, /if\(returnTarget\) returnTarget\.focus\(\)/,
+    "Closing the lightbox should restore focus to the originating gallery control");
+  assert.match(script, /el\.inert=isModal/,
+    "Background content should be inert while the lightbox is open");
+});
+
+
+test("all six stylist booking routes are present and secure", async () => {
+  const routes = await readFile(path.join(root, "booking-routes.js"), "utf8");
+  const keys = ["latoya-new", "latoya-returning", "kottia-new", "kottia-returning", "jahniqua-new", "jahniqua-returning"];
+  for (const key of keys) assert.ok(routes.includes("'" + key + "':"), "Missing route " + key);
+  const urls = [...routes.matchAll(/https:\/\/[^'"]+/g)].map(match => match[0]);
+  assert.equal(urls.length, 6, "Expected six HTTPS booking destinations");
+  for (const url of urls) assert.match(new URL(url).hostname, /square(up)?\.com$/i);
+});
+
+test("mobile booking choices stack and missing routes show a phone fallback", async () => {
+  const css = await readFile(path.join(root, "styles.css"), "utf8");
+  const script = await readFile(path.join(root, "script.js"), "utf8");
+  const homepage = await readFile(path.join(root, "index.html"), "utf8");
+  assert.match(css, /@media\(max-width:700px\)\{\.stylist-grid,\.client-status-grid\{grid-template-columns:1fr\}\}/);
+  assert.match(script, /Online booking for this selection is temporarily unavailable/);
+  assert.match(script, /252-468-1243/);
+  assert.match(homepage, /Online stylist routing requires JavaScript/);
+});
+
+
+test("local service pages include Wilson context, booking actions, and practical service guidance", async () => {
+  const pages = [
+    ["healthy-natural-hair", "healthy-hair"],
+    ["silk-press", "silk press"],
+    ["locs", "loc service"],
+    ["braids-protective-styles", "protective-style"],
+    ["hair-color", "color or chemical service"],
+    ["wigs-weaves", "install details"]
+  ];
+  for (const [slug, topic] of pages) {
+    const html = await readFile(path.join(root, "services", slug, "index.html"), "utf8");
+    assert.match(html, /Wilson, NC|Wilson, North Carolina/i, slug + " should identify the local service area");
+    assert.match(html, /href=["']\/#booking["']/, slug + " should provide a direct booking action");
+    assert.match(html, /href=["']tel:\+12524681243["']/, slug + " should provide a phone fallback");
+    assert.match(html, /<h1\b[^>]*>[^<]+in Wilson, NC/i, slug + " should have a locally relevant main heading");
+    if (slug === "locs" || slug === "braids-protective-styles" || slug === "hair-color" || slug === "wigs-weaves") {
+      assert.match(html, new RegExp(topic.replace(/[.*+?^$\{\}()|[\]\\]/g, "\\$&"), "i"),
+        slug + " should include specific pre-booking guidance");
+    }
+  }
+});
+
+
+test("service detail pages link to relevant neighboring services and clear booking actions", async () => {
+  const expected = {
+    "locs": ["/services/braids-protective-styles/", "/team/kottia-cotton/"],
+    "braids-protective-styles": ["/services/locs/", "/services/wigs-weaves/", "/team/kottia-cotton/"],
+    "hair-color": ["/services/silk-press/", "/services/wigs-weaves/"],
+    "wigs-weaves": ["/services/hair-color/", "/services/braids-protective-styles/"]
+  };
+  for (const [slug, targets] of Object.entries(expected)) {
+    const html = await readFile(path.join(root, "services", slug, "index.html"), "utf8");
+    const related = html.match(/<section class="section detail-links">[\s\S]*?<\/section>/)?.[0] || "";
+    assert.match(related, /href=["']\/#booking["'][\s\S]*?Choose Your Stylist/i,
+      slug + " should include a contextual booking CTA");
+    for (const target of targets) {
+      assert.ok(related.includes('href="' + target + '"'), slug + " should link to relevant page " + target);
+    }
+  }
+});
+
+
+test("product cards explain the Square storefront journey and offer product-specific actions", async () => {
+  const productPage = await readFile(path.join(root, "products", "index.html"), "utf8");
+  const homepage = await readFile(path.join(root, "index.html"), "utf8");
+  const names = [
+    "Beard Oil", "Hair Growth Oil", "Scalp Balm", "Hair Moisturizing Cream",
+    "Foot Soak", "Foot Scrub", "Flaxseed Gel", "Foot Oil",
+    "Leave-In Conditioner", "Moisturizing Shampoo", "Clarifying Shampoo"
+  ];
+  assert.match(productPage, /general Square storefront, not individual product pages/i);
+  assert.match(productPage, /Order checklist:[\s\S]*?confirm size and price[\s\S]*?final order total/i);
+  assert.match(productPage, /href=["']sms:\+12523609630["']/);
+  assert.match(productPage, /href=["']tel:\+12523609630["']/);
+  for (const name of names) {
+    assert.ok(productPage.includes("Find " + name + " in Square"), "Product page missing specific CTA for " + name);
+    assert.ok(homepage.includes("Find " + name + " in Square"), "Homepage missing specific CTA for " + name);
+  }
+});
+
+
+test("conversion tracking hooks cover booking, product and contact intent without collecting form data", async () => {
+  const homepage = await readFile(path.join(root, "index.html"), "utf8");
+  const productPage = await readFile(path.join(root, "products", "index.html"), "utf8");
+  const tracker = await readFile(path.join(root, "conversion-tracking.js"), "utf8");
+  const setup = await readFile(path.join(root, "docs", "conversion-analytics-setup.md"), "utf8");
+  assert.match(homepage, /src="conversion-tracking\.js/);
+  assert.match(productPage, /src="\/conversion-tracking\.js/);
+  for (const eventName of [
+    "booking_cta_click", "product_store_click", "storefront_click",
+    "contact_call_click", "contact_text_click", "contact_email_click"
+  ]) {
+    assert.ok(tracker.includes(eventName), "Missing conversion event " + eventName);
+  }
+  assert.match(tracker, /pazzion:conversion/);
+  assert.match(tracker, /typeof window\.gtag === "function"/);
+  assert.match(tracker, /Array\.isArray\(window\.dataLayer\)/);
+  assert.doesNotMatch(tracker, /FormData|contactFormStatus\.value|\.value\s*\)/);
+  assert.match(setup, /does not create an analytics property, load a Google tag, or send data/i);
+  assert.match(setup, /Measurement ID/i);
+});
