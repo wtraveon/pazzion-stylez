@@ -689,3 +689,31 @@ test("conversion tracking hooks cover booking, product and contact intent withou
   assert.match(setup, /does not create an analytics property, load a Google tag, or send data/i);
   assert.match(setup, /Measurement ID/i);
 });
+
+
+test("contact form locks after success and remains retryable after failure", async () => {
+  const script = await readFile(path.join(root, "script.js"), "utf8");
+  const successIndex = script.indexOf("You do not need to send it again.");
+  const lockIndex = script.indexOf("submitButton.textContent='Message Sent';", successIndex);
+  const finallyIndex = script.indexOf("Keep the button locked after confirmed success", successIndex);
+  assert.ok(successIndex >= 0, "successful contact submission should explain no resend is needed");
+  assert.ok(lockIndex > successIndex, "success should change the submit button label");
+  assert.ok(script.indexOf("submitButton.disabled=true;", lockIndex) > lockIndex,
+    "success should disable the submit button");
+  assert.ok(finallyIndex > lockIndex, "finally block should preserve the success lock");
+  const recovery = script.slice(finallyIndex, script.indexOf("\n  });", finallyIndex));
+  assert.match(recovery, /if\(!status\.classList\.contains\('success'\)\)/);
+  assert.match(recovery, /submitButton\.textContent='Send Message'/);
+});
+
+test("all Square storefront links open in a new tab safely", async () => {
+  for (const relativePath of ["index.html", "products/index.html"]) {
+    const html = await readFile(path.join(root, relativePath), "utf8");
+    const links = [...html.matchAll(/<a\b[^>]*href=["']https:\/\/pazzion-stylez-llc\.square\.site\/?["'][^>]*>/gi)];
+    assert.ok(links.length > 0, relativePath + " should include Square storefront links");
+    for (const [link] of links) {
+      assert.match(link, /target=["']_blank["']/i, relativePath + " Square link must open a new tab");
+      assert.match(link, /rel=["'][^"']*noopener[^"']*["']/i, relativePath + " Square link must use noopener");
+    }
+  }
+});
