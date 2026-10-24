@@ -689,3 +689,19 @@ test("conversion tracking hooks cover booking, product and contact intent withou
   assert.match(setup, /does not create an analytics property, load a Google tag, or send data/i);
   assert.match(setup, /Measurement ID/i);
 });
+
+
+test("contact form locks after success and remains retryable after failure", async () => {
+  const script = await readFile(path.join(root, "script.js"), "utf8");
+  const successIndex = script.indexOf("You do not need to send it again.");
+  const lockIndex = script.indexOf("submitButton.textContent='Message Sent';", successIndex);
+  const finallyIndex = script.indexOf("Keep the button locked after confirmed success", successIndex);
+  assert.ok(successIndex >= 0, "successful contact submission should explain no resend is needed");
+  assert.ok(lockIndex > successIndex, "success should change the submit button label");
+  assert.ok(script.indexOf("submitButton.disabled=true;", lockIndex) > lockIndex,
+    "success should disable the submit button");
+  assert.ok(finallyIndex > lockIndex, "finally block should preserve the success lock");
+  const recovery = script.slice(finallyIndex, script.indexOf("\n  });", finallyIndex));
+  assert.match(recovery, /if\(!status\.classList\.contains\('success'\)\)/);
+  assert.match(recovery, /submitButton\.textContent='Send Message'/);
+});
