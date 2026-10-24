@@ -522,3 +522,37 @@ test("photo-release form and API both support every current stylist", async () =
     assert.ok(releaseApi.includes('"' + stylist + '"'), "Photo-release API should accept " + stylist);
   }
 });
+
+
+test("contact, consultation, and booking fallback links are present", async () => {
+  const homepage = await readFile(path.join(root, "index.html"), "utf8");
+  const policy = await readFile(path.join(root, "policies", "index.html"), "utf8");
+  const script = await readFile(path.join(root, "script.js"), "utf8");
+
+  assert.match(homepage, /href="tel:\\+12524681243"/i,
+    "The primary salon phone must be available as a tap-to-call link");
+  assert.match(homepage, /href="sms:\\+12524681243"/i,
+    "The consultation section must provide a text fallback");
+  assert.match(homepage, /class="booking-fallback"[^>]*>Online stylist routing requires JavaScript[\\s\\S]*?href="tel:\\+12524681243"/i,
+    "Booking must have a phone fallback when JavaScript is unavailable");
+  assert.match(homepage, /id="bookingStatusMessage"[^>]*role="status"[^>]*aria-live="polite"/i,
+    "Booking errors must be announced accessibly");
+  assert.match(script, /Online booking for this selection is temporarily unavailable[\\s\\S]*?252-468-1243/i,
+    "Runtime booking failures must offer the salon phone fallback");
+  assert.match(homepage, /id="contactForm"[^>]*action="\\/api\\/contact"/i,
+    "The contact form must submit to the contact API");
+  assert.match(homepage, /For appointments, use Book Appointment[\\s\\S]*choose your stylist/i,
+    "The contact form must distinguish messages from appointment booking");
+  assert.match(homepage, /href="\\/policies\\/"/i,
+    "The homepage must link to the published salon policies");
+  assert.match(policy, /No deposit is required[\\s\\S]*?\\$25 consultation/i,
+    "The policy page must state the no-deposit rule and new-client consultation fee");
+  for (const contact of [
+    'href="tel:+12524681243"',
+    'href="tel:+12522940280"',
+    'href="tel:+12523159963"',
+    'href="mailto:jspeight13@yahoo.com"'
+  ]) {
+    assert.ok(homepage.includes(contact), `Expected stylist or salon contact link: ${contact}`);
+  }
+});
