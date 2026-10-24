@@ -606,3 +606,26 @@ test("mobile booking choices stack and missing routes show a phone fallback", as
   assert.match(script, /252-468-1243/);
   assert.match(homepage, /Online stylist routing requires JavaScript/);
 });
+
+
+test("local service pages include Wilson context, booking actions, and practical service guidance", async () => {
+  const pages = [
+    ["healthy-natural-hair", "healthy-hair"],
+    ["silk-press", "silk press"],
+    ["locs", "loc service"],
+    ["braids-protective-styles", "protective-style"],
+    ["hair-color", "color or chemical service"],
+    ["wigs-weaves", "install details"]
+  ];
+  for (const [slug, topic] of pages) {
+    const html = await readFile(path.join(root, "services", slug, "index.html"), "utf8");
+    assert.match(html, /Wilson, NC|Wilson, North Carolina/i, slug + " should identify the local service area");
+    assert.match(html, /href=["']\/#booking["']/, slug + " should provide a direct booking action");
+    assert.match(html, /href=["']tel:\+12524681243["']/, slug + " should provide a phone fallback");
+    assert.match(html, /<h1\b[^>]*>[^<]+in Wilson, NC/i, slug + " should have a locally relevant main heading");
+    if (slug === "locs" || slug === "braids-protective-styles" || slug === "hair-color" || slug === "wigs-weaves") {
+      assert.match(html, new RegExp(topic.replace(/[.*+?^$\{\}()|[\]\\]/g, "\\$&"), "i"),
+        slug + " should include specific pre-booking guidance");
+    }
+  }
+});
