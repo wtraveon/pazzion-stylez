@@ -480,11 +480,14 @@ if(contactForm){
         throw new Error(result.message||'We could not send your message right now.');
       }
 
-      status.textContent=`Thank you! Your message has been received${result.record_id?` (reference ${result.record_id})`:''}.`;
+      status.textContent=`Thank you! Your message has been received${result.record_id?` (reference ${result.record_id})`:''}. You do not need to send it again.`;
       status.classList.add('success');
       contactForm.reset();
       syncPreferredStylist();
       resetTurnstile('contact');
+      submitButton.textContent='Message Sent';
+      submitButton.disabled=true;
+      submitButton.setAttribute('aria-disabled','true');
     }catch(error){
       const timedOut=error?.name==='AbortError';
       status.textContent=timedOut
@@ -494,8 +497,12 @@ if(contactForm){
       resetTurnstile('contact');
     }finally{
       contactForm.removeAttribute('aria-busy');
-      submitButton.disabled=false;
-      submitButton.removeAttribute('aria-disabled');
+      // Keep the button locked after confirmed success; allow retry only on failure.
+      if(!status.classList.contains('success')){
+        submitButton.disabled=false;
+        submitButton.removeAttribute('aria-disabled');
+        submitButton.textContent='Send Message';
+      }
     }
   });
 }
