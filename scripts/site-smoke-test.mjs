@@ -86,8 +86,38 @@ for (const file of htmlFiles) {
 
   const jsonLd = [...html.matchAll(/<script\b[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)];
   for (const block of jsonLd) {
-    try { JSON.parse(block[1]); }
-    catch { fail(`${label}: invalid JSON-LD block.`); }
+    try {
+      const data = JSON.parse(block[1]);
+      const schemaContext = typeof data['@context'] === 'string'
+        ? data['@context']
+        : data['@context']?.['@vocab'];
+      if (!schemaContext || !String(schemaContext).includes('schema.org')) {
+        fail(`${label}: JSON-LD must declare a Schema.org @context.`);
+      }
+      const nodes = Array.isArray(data['@graph']) ? data['@graph'] : [data];
+      const ids = new Set();
+      for (const node of nodes) {
+        if (!node || typeof node !== 'object' || !node['@type']) {
+          fail(`${label}: each top-level JSON-LD node must declare @type.`);
+          continue;
+        }
+        if (node['@id']) {
+          if (ids.has(node['@id'])) fail(`${label}: duplicate JSON-LD @id "${node['@id']}".`);
+          ids.add(node['@id']);
+        }
+      }
+      const collectLocalRefs = (value) => {
+        if (Array.isArray(value)) {
+          for (const item of value) collectLocalRefs(item);
+        } else if (value && typeof value === 'object') {
+          if (typeof value['@id'] === 'string' && value['@id'].startsWith('https://pazzionstylez.com/#') && !nodes.some((node) => node['@id'] === value['@id'])) {
+            fail(`${label}: unresolved local JSON-LD @id reference "${value['@id']}".`);
+          }
+          for (const child of Object.values(value)) collectLocalRefs(child);
+        }
+      };
+      collectLocalRefs(data);
+    } catch { fail(`${label}: invalid JSON-LD block.`); }
   }
 }
 
