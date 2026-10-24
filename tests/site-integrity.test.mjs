@@ -705,3 +705,16 @@ test("contact form locks after success and remains retryable after failure", asy
   assert.match(recovery, /if\(!status\.classList\.contains\('success'\)\)/);
   assert.match(recovery, /submitButton\.textContent='Send Message'/);
 });
+
+
+test("all Square storefront links open in a new tab safely", async () => {
+  for (const relativePath of ["index.html", "products/index.html"]) {
+    const html = await readFile(path.join(root, relativePath), "utf8");
+    const links = [...html.matchAll(/<a\b[^>]*href=["']https:\/\/pazzion-stylez-llc\.square\.site\/?["'][^>]*>/gi)];
+    assert.ok(links.length > 0, relativePath + " should include Square storefront links");
+    for (const [link] of links) {
+      assert.match(link, /target=["']_blank["']/i, relativePath + " Square link must open a new tab");
+      assert.match(link, /rel=["'][^"']*noopener[^"']*["']/i, relativePath + " Square link must use noopener");
+    }
+  }
+});
