@@ -586,3 +586,23 @@ test("gallery lightbox supports Escape, confines Tab focus, and restores focus",
   assert.match(script, /el\.inert=isModal/,
     "Background content should be inert while the lightbox is open");
 });
+
+
+test("all six stylist booking routes are present and secure", async () => {
+  const routes = await readFile(path.join(root, "booking-routes.js"), "utf8");
+  const keys = ["latoya-new", "latoya-returning", "kottia-new", "kottia-returning", "jahniqua-new", "jahniqua-returning"];
+  for (const key of keys) assert.ok(routes.includes("'" + key + "':"), "Missing route " + key);
+  const urls = [...routes.matchAll(/https:\/\/[^'"]+/g)].map(match => match[0]);
+  assert.equal(urls.length, 6, "Expected six HTTPS booking destinations");
+  for (const url of urls) assert.match(new URL(url).hostname, /square(up)?\.com$/i);
+});
+
+test("mobile booking choices stack and missing routes show a phone fallback", async () => {
+  const css = await readFile(path.join(root, "styles.css"), "utf8");
+  const script = await readFile(path.join(root, "script.js"), "utf8");
+  const homepage = await readFile(path.join(root, "index.html"), "utf8");
+  assert.match(css, /@media\(max-width:700px\)\{\.stylist-grid,\.client-status-grid\{grid-template-columns:1fr\}\}/);
+  assert.match(script, /Online booking for this selection is temporarily unavailable/);
+  assert.match(script, /252-468-1243/);
+  assert.match(homepage, /Online stylist routing requires JavaScript/);
+});
