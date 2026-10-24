@@ -19,5 +19,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Check JavaScript syntax
+        run: node --check script.js && node --check booking-routes.js
+      - name: Run site regression tests
+        run: node --test tests/site-integrity.test.mjs
       - name: Validate site links, metadata, JSON-LD, and booking routes
         run: node scripts/site-smoke-test.mjs
