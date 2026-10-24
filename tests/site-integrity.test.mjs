@@ -560,3 +560,29 @@ test("contact, consultation, and booking fallback links are present", async () =
     assert.ok(homepage.includes(contact), `Expected stylist or salon contact link: ${contact}`);
   }
 });
+
+
+test("keyboard users have visible focus, a skip link, and reduced-motion support", async () => {
+  const homepage = await readFile(path.join(root, "index.html"), "utf8");
+  const css = await readFile(path.join(root, "styles.css"), "utf8");
+
+  assert.match(homepage, /<a[^>]*class=["'][^"']*skip-link[^"']*["'][^>]*href=["']#main["']/i,
+    "Homepage should provide a skip link to main content");
+  assert.match(css, /:where\(a,button,summary,input,select,textarea\):focus-visible\s*\{[^}]*outline:\s*3px solid[^}]*box-shadow:\s*0 0 0 6px/i,
+    "Keyboard focus should have a visible two-tone indicator on interactive controls");
+  assert.match(css, /prefers-reduced-motion:\s*reduce/i,
+    "Animations and smooth scrolling should respect reduced-motion preferences");
+});
+
+test("gallery lightbox supports Escape, confines Tab focus, and restores focus", async () => {
+  const script = await readFile(path.join(root, "script.js"), "utf8");
+
+  assert.match(script, /if\(event\.key==='Escape'\)\s*\{[\s\S]*?closeLightbox\(\)/,
+    "Escape should close the gallery lightbox");
+  assert.match(script, /if\(event\.key==='Tab'\)\s*\{\s*event\.preventDefault\(\);\s*lightboxClose\.focus\(\);/,
+    "Tab should keep keyboard focus inside the lightbox");
+  assert.match(script, /if\(returnTarget\) returnTarget\.focus\(\)/,
+    "Closing the lightbox should restore focus to the originating gallery control");
+  assert.match(script, /el\.inert=isModal/,
+    "Background content should be inert while the lightbox is open");
+});
