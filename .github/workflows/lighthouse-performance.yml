@@ -1,0 +1,39 @@
+name: Lighthouse performance audit
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "23 8 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Prepare report directory
+        run: mkdir -p lighthouse-reports
+      - name: Audit homepage on mobile
+        run: npx --yes lighthouse@12 https://pazzionstylez.com/ --quiet --chrome-flags="--headless --no-sandbox" --form-factor=mobile --output=json --output-path=lighthouse-reports/home-mobile.json
+      - name: Audit homepage on desktop
+        run: npx --yes lighthouse@12 https://pazzionstylez.com/ --quiet --chrome-flags="--headless --no-sandbox" --form-factor=desktop --output=json --output-path=lighthouse-reports/home-desktop.json
+      - name: Audit products page on mobile
+        run: npx --yes lighthouse@12 https://pazzionstylez.com/products/ --quiet --chrome-flags="--headless --no-sandbox" --form-factor=mobile --output=json --output-path=lighthouse-reports/products-mobile.json
+      - name: Audit products page on desktop
+        run: npx --yes lighthouse@12 https://pazzionstylez.com/products/ --quiet --chrome-flags="--headless --no-sandbox" --form-factor=desktop --output=json --output-path=lighthouse-reports/products-desktop.json
+      - name: Upload Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-performance-reports
+          path: lighthouse-reports/
+          if-no-files-found: warn
+          retention-days: 30
