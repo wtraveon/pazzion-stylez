@@ -667,3 +667,25 @@ test("product cards explain the Square storefront journey and offer product-spec
     assert.ok(homepage.includes("Find " + name + " in Square"), "Homepage missing specific CTA for " + name);
   }
 });
+
+
+test("conversion tracking hooks cover booking, product and contact intent without collecting form data", async () => {
+  const homepage = await readFile(path.join(root, "index.html"), "utf8");
+  const productPage = await readFile(path.join(root, "products", "index.html"), "utf8");
+  const tracker = await readFile(path.join(root, "conversion-tracking.js"), "utf8");
+  const setup = await readFile(path.join(root, "docs", "conversion-analytics-setup.md"), "utf8");
+  assert.match(homepage, /src="conversion-tracking\.js/);
+  assert.match(productPage, /src="\/conversion-tracking\.js/);
+  for (const eventName of [
+    "booking_cta_click", "product_store_click", "storefront_click",
+    "contact_call_click", "contact_text_click", "contact_email_click"
+  ]) {
+    assert.ok(tracker.includes(eventName), "Missing conversion event " + eventName);
+  }
+  assert.match(tracker, /pazzion:conversion/);
+  assert.match(tracker, /typeof window\.gtag === "function"/);
+  assert.match(tracker, /Array\.isArray\(window\.dataLayer\)/);
+  assert.doesNotMatch(tracker, /FormData|contactFormStatus\.value|\.value\s*\)/);
+  assert.match(setup, /does not create an analytics property, load a Google tag, or send data/i);
+  assert.match(setup, /Measurement ID/i);
+});
