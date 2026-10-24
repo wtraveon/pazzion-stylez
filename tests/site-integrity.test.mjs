@@ -648,3 +648,22 @@ test("service detail pages link to relevant neighboring services and clear booki
     }
   }
 });
+
+
+test("product cards explain the Square storefront journey and offer product-specific actions", async () => {
+  const productPage = await readFile(path.join(root, "products", "index.html"), "utf8");
+  const homepage = await readFile(path.join(root, "index.html"), "utf8");
+  const names = [
+    "Beard Oil", "Hair Growth Oil", "Scalp Balm", "Hair Moisturizing Cream",
+    "Foot Soak", "Foot Scrub", "Flaxseed Gel", "Foot Oil",
+    "Leave-In Conditioner", "Moisturizing Shampoo", "Clarifying Shampoo"
+  ];
+  assert.match(productPage, /general Square storefront, not individual product pages/i);
+  assert.match(productPage, /Order checklist:[\s\S]*?confirm size and price[\s\S]*?final order total/i);
+  assert.match(productPage, /href=["']sms:\+12523609630["']/);
+  assert.match(productPage, /href=["']tel:\+12523609630["']/);
+  for (const name of names) {
+    assert.ok(productPage.includes("Find " + name + " in Square"), "Product page missing specific CTA for " + name);
+    assert.ok(homepage.includes("Find " + name + " in Square"), "Homepage missing specific CTA for " + name);
+  }
+});
