@@ -629,3 +629,22 @@ test("local service pages include Wilson context, booking actions, and practical
     }
   }
 });
+
+
+test("service detail pages link to relevant neighboring services and clear booking actions", async () => {
+  const expected = {
+    "locs": ["/services/braids-protective-styles/", "/team/kottia-cotton/"],
+    "braids-protective-styles": ["/services/locs/", "/services/wigs-weaves/", "/team/kottia-cotton/"],
+    "hair-color": ["/services/silk-press/", "/services/wigs-weaves/"],
+    "wigs-weaves": ["/services/hair-color/", "/services/braids-protective-styles/"]
+  };
+  for (const [slug, targets] of Object.entries(expected)) {
+    const html = await readFile(path.join(root, "services", slug, "index.html"), "utf8");
+    const related = html.match(/<section class="section detail-links">[\s\S]*?<\/section>/)?.[0] || "";
+    assert.match(related, /href=["']\/#booking["'][\s\S]*?Choose Your Stylist/i,
+      slug + " should include a contextual booking CTA");
+    for (const target of targets) {
+      assert.ok(related.includes('href="' + target + '"'), slug + " should link to relevant page " + target);
+    }
+  }
+});
