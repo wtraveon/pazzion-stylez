@@ -1,6 +1,6 @@
 # Diagnostic Coverage — Pazzion Stylez
 
-**Snapshot:** 2026-10-25  
+**Snapshot:** 2026-10-25 (booking probe behavior updated after the recorded run)  
 **Repository:** [wtraveon/pazzion-stylez](https://github.com/wtraveon/pazzion-stylez)  
 **Commit checked:** `7ea1c74af4d7dbc92b27283d9199956e1d73d509`
 
@@ -13,7 +13,7 @@ This matrix separates automated checks from manual production verification. A gr
 | 1 | Reconcile production with GitHub `main` | Automated live HTTP checks match current expected product-page CTA and other critical content. A web-extracted product-page snapshot showed the old CTA; that conflicts with the passing direct production smoke test and is likely stale crawler content, not enough evidence of a deployment failure. | [Production smoke checks](https://github.com/wtraveon/pazzion-stylez/actions/runs/40201470280) passed on this commit. Confirm current content in a normal browser with a hard refresh if the old CTA remains visible to a user. |
 | 2 | Automated test suite | **Passing** | [Website checks](https://github.com/wtraveon/pazzion-stylez/actions/runs/40201470277) and [site regression tests](https://github.com/wtraveon/pazzion-stylez/actions/runs/40201470360) passed. Tests validate source integrity, metadata/JSON-LD, links, booking mappings, form helper behavior, and JavaScript syntax. |
 | 3 | Lighthouse | **Passing; desktop emulation conflict resolved in workflow** | [Lighthouse audit](https://github.com/wtraveon/pazzion-stylez/actions/runs/40201470322) completed all four audits: homepage mobile/desktop and products mobile/desktop. Workflow uses mobile form factor for mobile runs and `--preset=desktop` for desktop runs, not conflicting emulation flags. |
-| 4 | Customer-facing workflows | **Partially checked; manual sign-off still needed** | All six Square route mappings exist. Automated endpoint results were LaToya new 200, LaToya returning 200, Kottia new 429, Kottia returning 200, JahNiqua new 429, JahNiqua returning 429. HTTP 429 means Square rate-limited automation; manually test the flagged routes and complete a booking flow. Form APIs reject invalid payloads correctly, but real email receipt is not proven. |
+| 4 | Customer-facing workflows | **Route mappings checked; end-to-end booking unverified** | All six Square route mappings exist and are checked locally. The production smoke test no longer probes Square URLs because parallel automated requests triggered rate limiting and HTTP status checks cannot verify interactive booking. Open all six routes in a normal browser and verify stylist, client status, service selection, availability, and checkout handoff. Form APIs reject invalid payloads correctly, but real email receipt is not proven. |
 | 5 | Policy, SEO, accessibility | **Automated policy/SEO checks pass; manual items remain** | Production smoke checks verified the current no-deposit policy, all 16 sitemap URLs returning HTML with unique descriptions and matching canonical URLs, plus required security headers. Search-engine indexing and manual keyboard/screen-reader/device checks remain outstanding. |
 
 ## Lighthouse scores
@@ -38,7 +38,7 @@ These are lab scores from this run, not a guarantee for every device or visit. T
 
 ## Remaining manual release sign-off
 
-- [ ] Open all six stylist/client-status routes in a normal browser, particularly the three Square routes that rate-limited automated access. Confirm the calendar loads and verify a booking can proceed without submitting an unintended real appointment.
+- [ ] Open all six stylist/client-status routes in a normal browser. Confirm the calendar loads, the correct stylist/client-status journey is shown, services and availability can be selected, and checkout proceeds without submitting an unintended real appointment. Automated Square URL probing is intentionally disabled to avoid rate-limiting and cannot substitute for this test.
 - [ ] Confirm the actual deposit/prepayment and $25 consultation configuration in Square Dashboard.
 - [ ] Submit a consented test through the live contact form and confirm the notification reaches the configured inbox.
 - [ ] Submit a consented test through the live photo-release form and confirm the notification reaches the configured inbox.
