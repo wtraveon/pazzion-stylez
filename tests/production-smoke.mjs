@@ -94,6 +94,10 @@ assert.ok(bookingScriptPath, "Live homepage should load the booking script");
 const bookingScript = await getText(bookingScriptPath);
 assert.match(bookingScript, /new URLSearchParams\(window\.location\.search\)\.get\('stylist'\)/,
   "Live booking script should support stylist preselection from profile links");
+assert.match(bookingScript, /window\.open\(url,\s*['_"]_blank['_"],\s*['"]noopener,noreferrer['"]\)/,
+  "Live Square booking flow must open Square in a separate tab with opener protection");
+assert.doesNotMatch(bookingScript, /window\.location\.assign\(url\)/,
+  "Live Square booking flow must preserve the salon website in its original tab");
 
 for (const [header, expected] of [
   ["x-content-type-options", "nosniff"],
