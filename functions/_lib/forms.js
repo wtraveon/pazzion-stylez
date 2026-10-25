@@ -118,9 +118,25 @@ export async function sendEmail(env, subject, html, replyTo) {
       }
     );
     const result = await response.json().catch(() => ({}));
+    const delivery = result.result || {};
+    const recipient = clean(env.FORM_NOTIFICATION_TO, 254).toLowerCase();
+    const delivered = Array.isArray(delivery.delivered)
+      && delivery.delivered.some(address => typeof address === "string" && address.toLowerCase() === recipient);
+    const queued = Array.isArray(delivery.queued)
+      && delivery.queued.some(address => typeof address === "string" && address.toLowerCase() === recipient);
+    const bounced = Array.isArray(delivery.permanent_bounces)
+      && delivery.permanent_bounces.some(address => typeof address === "string" && address.toLowerCase() === recipient);
+    const suppressed = Array.isArray(delivery.suppressed_recipients)
+      && delivery.suppressed_recipients.some(address => typeof address === "string" && address.toLowerCase() === recipient);
+
+    // Do not tell the customer the form succeeded unless Cloudflare confirms
+    // that the configured inbox was delivered to or queued. A globally
+    // successful API response can still include a suppressed/bounced recipient.
+    const ok = response.ok && result.success === true && !bounced && !suppressed && (delivered || queued);
     return {
-      ok: response.ok && result.success === true,
-      id: result.result?.message_id || null
+      ok,
+      id: delivery.message_id || null,
+      ...(ok ? {} : { deliveryError: true })
     };
   } catch {
     return { ok: false };
