@@ -179,7 +179,15 @@ const squareResults = await Promise.all([...routes.entries()].map(async ([key, u
   }
   throw new Error(`Square route ${key} failed after 2 attempts: ${lastError?.name || "network error"}: ${url}`);
 }));
-console.log("Square endpoint reachability:", squareResults.map(({ key, status }) => `${key}=${status}`).join(", "));
+console.log("Square endpoint HTTP responses:", squareResults.map(({ key, status }) => `${key}=HTTP ${status}`).join(", "));
+const squareUnverified = squareResults.filter(({ status }) => status === 403 || status === 429);
+if (squareUnverified.length) {
+  console.warn(
+    "MANUAL VERIFICATION REQUIRED: Square challenged or rate-limited automated requests for " +
+    squareUnverified.map(({ key, status }) => `${key} (HTTP ${status})`).join(", ") +
+    ". Endpoint reachability does not verify the interactive booking flow; open each route in a real browser."
+  );
+}
 
 const configResponse = await request("/api/form-config", {
   headers: { accept: "application/json" }
@@ -210,4 +218,4 @@ for (const endpoint of ["/api/contact", "/api/photo-release"]) {
 }
 
 console.log("Production smoke checks passed: homepage, photo-release stylist options, current policy, all six Square route mappings, Turnstile config, and both form API validation paths.");
-console.log("Note: successful API validation does not prove real email delivery; send a consented test submission from a real browser to verify inbox receipt.");
+console.log("MANUAL VERIFICATION REQUIRED: successful API validation does not prove real email delivery. Submit a consented test through each real form and confirm the notification arrives in the intended inbox before declaring production form delivery verified.");
