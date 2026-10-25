@@ -2,39 +2,48 @@
 
 **Snapshot:** 2026-10-25  
 **Repository:** [wtraveon/pazzion-stylez](https://github.com/wtraveon/pazzion-stylez)  
-**Commit checked:** `8614c90eb64bc78cbece31a21b391ed678f837d7`
+**Commit checked:** `7ea1c74af4d7dbc92b27283d9199956e1d73d509`
 
-This matrix distinguishes automated checks from manual production verification. A green workflow is not evidence that third-party booking, email delivery, search-engine indexing, or full accessibility has been end-to-end verified.
+This matrix separates automated checks from manual production verification. A green workflow is not evidence that third-party booking, email delivery, search-engine indexing, or full accessibility has been end-to-end verified.
 
-| Area | Current result | Evidence / next action |
-| --- | --- | --- |
-| Live pages and search visibility | Live page checks passed; search-engine visibility not confirmed | [Site smoke test](https://github.com/wtraveon/pazzion-stylez/actions/runs/40201235599) passed. Sitemap/robots source presence is not proof of indexing or rankings; verify with Google Search Console/Bing Webmaster Tools. |
-| Repository and source structure | Inspected | Static HTML/CSS/JS, Cloudflare Pages Functions, booking route map, tests, and security-header configuration are present in source. |
-| CI regression suite | **Passing** | [Website checks](https://github.com/wtraveon/pazzion-stylez/actions/runs/40201235606) passed on the checked commit. |
-| Production smoke tests | **Passing, with manual verification gaps** | [Production smoke checks](https://github.com/wtraveon/pazzion-stylez/actions/runs/40201235598) passed. This covers automated reachability/configuration and invalid-payload checks, not a completed customer booking or successful inbox delivery. |
-| Lighthouse performance scores | **Audit completed; inspect report artifact for numeric scores** | [Lighthouse run and report artifact](https://github.com/wtraveon/pazzion-stylez/actions/runs/40201235597). Audits ran for homepage and products page on mobile and desktop. This status records completion, not a score threshold or performance sign-off. |
-| Square booking completion | Needs live test | Open every booking route in a normal browser, test the calendar and appointment flow, and verify the actual Square deposit/prepayment settings. Automated 403/429 responses can be access challenges/rate limits and are not proof of booking failure or success. |
-| Contact form email delivery | Needs live test | Submit a consented test through the live contact form and confirm the notification reaches the configured inbox. Invalid-payload smoke checks do not prove delivery. |
-| Photo-release form email delivery | Needs live test | Submit a consented test through the live photo-release form and confirm inbox receipt. |
-| SEO sitemap and robots configuration | Present in source; production fetch/indexing not fully verified | Check the live `/sitemap.xml` and `/robots.txt` responses, then validate indexing separately in webmaster tools. |
-| Security headers | Configured in source; live response not independently signed off here | Review the root `_headers` file and validate actual production response headers with a header checker or browser devtools. |
-| Cross-device visual and accessibility testing | Not fully verified | Lighthouse responsive audits ran on mobile and desktop for two pages. Still perform manual keyboard, focus, screen-reader, contrast, zoom/reflow, and representative device/browser checks across key pages and forms. |
+## Repair-order status
+
+| Priority | Area | Current result | Evidence / next action |
+| --- | --- | --- | --- |
+| 1 | Reconcile production with GitHub `main` | Automated live HTTP checks match current expected product-page CTA and other critical content. A web-extracted product-page snapshot showed the old CTA; that conflicts with the passing direct production smoke test and is likely stale crawler content, not enough evidence of a deployment failure. | [Production smoke checks](https://github.com/wtraveon/pazzion-stylez/actions/runs/40201470280) passed on this commit. Confirm current content in a normal browser with a hard refresh if the old CTA remains visible to a user. |
+| 2 | Automated test suite | **Passing** | [Website checks](https://github.com/wtraveon/pazzion-stylez/actions/runs/40201470277) and [site regression tests](https://github.com/wtraveon/pazzion-stylez/actions/runs/40201470360) passed. Tests validate source integrity, metadata/JSON-LD, links, booking mappings, form helper behavior, and JavaScript syntax. |
+| 3 | Lighthouse | **Passing; desktop emulation conflict resolved in workflow** | [Lighthouse audit](https://github.com/wtraveon/pazzion-stylez/actions/runs/40201470322) completed all four audits: homepage mobile/desktop and products mobile/desktop. Workflow uses mobile form factor for mobile runs and `--preset=desktop` for desktop runs, not conflicting emulation flags. |
+| 4 | Customer-facing workflows | **Partially checked; manual sign-off still needed** | All six Square route mappings exist. Automated endpoint results were LaToya new 200, LaToya returning 200, Kottia new 429, Kottia returning 200, JahNiqua new 429, JahNiqua returning 429. HTTP 429 means Square rate-limited automation; manually test the flagged routes and complete a booking flow. Form APIs reject invalid payloads correctly, but real email receipt is not proven. |
+| 5 | Policy, SEO, accessibility | **Automated policy/SEO checks pass; manual items remain** | Production smoke checks verified the current no-deposit policy, all 16 sitemap URLs returning HTML with unique descriptions and matching canonical URLs, plus required security headers. Search-engine indexing and manual keyboard/screen-reader/device checks remain outstanding. |
+
+## Lighthouse scores
+
+Scores from the latest completed run's JSON reports:
+
+| Page | Device | Performance | Accessibility | Best practices | SEO |
+| --- | --- | ---: | ---: | ---: | ---: |
+| Homepage | Desktop | 100 | 100 | 100 | 100 |
+| Homepage | Mobile | 94 | 100 | 100 | 100 |
+| Products | Desktop | 98 | 100 | 100 | 100 |
+| Products | Mobile | 96 | 100 | 100 | 100 |
+
+These are lab scores from this run, not a guarantee for every device or visit. The mobile Largest Contentful Paint (LCP) was about 2.8 seconds on the homepage and 2.7 seconds on the products page; desktop LCP was under 1.2 seconds for both pages.
 
 ## Automated workflow evidence
 
-- [Website checks — passing](https://github.com/wtraveon/pazzion-stylez/actions/runs/40201235606)
-- [Site smoke test — passing](https://github.com/wtraveon/pazzion-stylez/actions/runs/40201235599)
-- [Production smoke checks — passing](https://github.com/wtraveon/pazzion-stylez/actions/runs/40201235598)
-- [Lighthouse performance audit — completed](https://github.com/wtraveon/pazzion-stylez/actions/runs/40201235597)
+- [Website checks — passing](https://github.com/wtraveon/pazzion-stylez/actions/runs/40201470277)
+- [Site smoke test — passing](https://github.com/wtraveon/pazzion-stylez/actions/runs/40201470360)
+- [Production smoke checks — passing](https://github.com/wtraveon/pazzion-stylez/actions/runs/40201470280)
+- [Lighthouse performance audit — passing](https://github.com/wtraveon/pazzion-stylez/actions/runs/40201470322)
 
-## Release sign-off checklist
+## Remaining manual release sign-off
 
-- [ ] Complete a real booking test for each Square route/stylist and verify deposit/prepayment settings in Square Dashboard.
-- [ ] Confirm live contact-form notification arrives in the configured inbox.
-- [ ] Confirm live photo-release-form notification arrives in the configured inbox.
-- [ ] Review numeric Lighthouse scores and any report warnings from the artifact.
-- [ ] Fetch production sitemap, robots, and security headers and record results.
-- [ ] Perform manual accessibility and responsive checks on homepage, service pages, booking handoff, and forms.
-- [ ] Check Google Search Console/Bing Webmaster Tools for crawl/index status.
+- [ ] Open all six stylist/client-status routes in a normal browser, particularly the three Square routes that rate-limited automated access. Confirm the calendar loads and verify a booking can proceed without submitting an unintended real appointment.
+- [ ] Confirm the actual deposit/prepayment and $25 consultation configuration in Square Dashboard.
+- [ ] Submit a consented test through the live contact form and confirm the notification reaches the configured inbox.
+- [ ] Submit a consented test through the live photo-release form and confirm the notification reaches the configured inbox.
+- [ ] Confirm Square storefront navigation opens a separate tab/window on desktop and mobile browsers.
+- [ ] Check Google Search Console/Bing Webmaster Tools for crawl and index status.
+- [ ] Perform manual keyboard-only, focus visibility, screen-reader, contrast, zoom/reflow, and representative mobile/desktop checks across key pages and forms.
 
-Record the test date, environment, route/form, outcome, and evidence for each completed item. Leave items unchecked until verified.
+Record the date, environment, route/form, outcome, and evidence for each completed item. Do not mark an item verified until its manual test is complete.
