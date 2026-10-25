@@ -428,7 +428,7 @@ test("homepage and salon policy agree on deposits and new-client consultations",
   for (const [name, html] of [["homepage", homepage], ["policies page", policies]]) {
     assert.match(html, /does not require deposits, including non-refundable deposits/i,
       `${name} should explicitly rule out both required and non-refundable deposits`);
-    assert.match(html, /\$25 consultation/i, `${name} should disclose the new-client consultation fee`);
+    assert.match(html, /\$25(?: new-client)? consultation/i, `${name} should disclose the new-client consultation fee`);
     assert.doesNotMatch(html, /non-refundable deposit may be required|deposit may be required|deposit required for selected services/i,
       `${name} must not imply that deposits may be required`);
   }
