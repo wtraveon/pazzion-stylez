@@ -414,8 +414,8 @@ test("product cards disclose that Square links open the general storefront", asy
   for (const tile of tiles) {
     assert.match(tile, /href="https:\/\/pazzion-stylez-llc\.square\.site\/"[^>]*aria-label="Open the Square store to find [^"]+"/i,
       "Product image links should clearly state that Square opens the storefront");
-    assert.match(tile, />Browse Square store <span aria-hidden="true">↗<\/span>/i,
-      "Product CTA should not imply a product-specific checkout destination");
+    assert.match(tile, />Find [^<]+ in Square <span aria-hidden="true">↗<\/span>/i,
+      "Product CTA should identify the product shoppers should search for in the general Square storefront");
   }
   assert.match(productPage, /opens the Square storefront, not a product-specific checkout page/i,
     "The product page should explain that shoppers need to find the item in the Square storefront");
@@ -449,8 +449,8 @@ test("homepage product section accurately describes general Square storefront li
   const tiles = [...homepage.matchAll(/<article class="product-card ps-home-product">([\s\S]*?)<\/article>/gi)].map(([, tile]) => tile);
   assert.equal(tiles.length, 11, "Expected eleven homepage product tiles");
   for (const tile of tiles) {
-    assert.match(tile, />Browse Square store ↗<\/a>/i,
-      "Homepage product links should describe the general Square storefront");
+    assert.match(tile, />Find [^<]+ in Square ↗<\/a>/i,
+      "Homepage product links should identify the product shoppers should search for in Square");
   }
   assert.match(homepage, /Product cards open the general Square storefront/i,
     "Homepage should explain that product links open the general storefront");
@@ -604,7 +604,8 @@ test("mobile booking choices stack and missing routes show a phone fallback", as
   const css = await readFile(path.join(root, "styles.css"), "utf8");
   const script = await readFile(path.join(root, "script.js"), "utf8");
   const homepage = await readFile(path.join(root, "index.html"), "utf8");
-  assert.match(css, /@media\(max-width:700px\)\{\.stylist-grid,\.client-status-grid\{grid-template-columns:1fr\}\}/);
+  assert.match(css, /@media\(max-width:700px\)\{\.stylist-grid,\.client-status-grid\{grid-template-columns:1fr\}/,
+    "Mobile breakpoint should stack stylist and client-status choices into one column");
   assert.match(script, /Online booking for this selection is temporarily unavailable/);
   assert.match(script, /252-468-1243/);
   assert.match(homepage, /Online stylist routing requires JavaScript/);
