@@ -159,12 +159,45 @@ test("sendEmail reports provider rejection without exposing provider details", a
       FORM_NOTIFICATION_TO: "salon@example.com",
       FROM_EMAIL: "website@example.com"
     }, "Subject", "<p>Body</p>");
-    assert.deepEqual(result, { ok: false, id: null });
+    assert.deepEqual(result, { ok: false, id: null, deliveryError: true });
   } finally {
     globalThis.fetch = originalFetch;
   }
 });
 
+
+test("sendEmail requires the notification inbox to be delivered or queued", async () => {
+  const originalFetch = globalThis.fetch;
+  const env = {
+    CLOUDFLARE_ACCOUNT_ID: "account",
+    CLOUDFLARE_EMAIL_API_TOKEN: "token",
+    FORM_NOTIFICATION_TO: "salon@example.com",
+    FROM_EMAIL: "website@example.com"
+  };
+  try {
+    globalThis.fetch = async () => new Response(JSON.stringify({
+      success: true,
+      result: { message_id: "msg-suppressed", delivered: [], queued: [], permanent_bounces: [], suppressed_recipients: ["salon@example.com"] }
+    }), { status: 200 });
+    assert.equal((await sendEmail(env, "Subject", "<p>Body</p>")).ok, false);
+
+    globalThis.fetch = async () => new Response(JSON.stringify({
+      success: true,
+      result: { message_id: "msg-queued", delivered: [], queued: ["SALON@example.com"], permanent_bounces: [], suppressed_recipients: [] }
+    }), { status: 200 });
+    const queued = await sendEmail(env, "Subject", "<p>Body</p>");
+    assert.equal(queued.ok, true);
+    assert.equal(queued.id, "msg-queued");
+
+    globalThis.fetch = async () => new Response(JSON.stringify({
+      success: true,
+      result: { message_id: "msg-bounced", delivered: [], queued: [], permanent_bounces: ["salon@example.com"], suppressed_recipients: [] }
+    }), { status: 200 });
+    assert.equal((await sendEmail(env, "Subject", "<p>Body</p>")).ok, false);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
 
 test("sendEmail treats non-JSON provider responses as a failed delivery", async () => {
   const originalFetch = globalThis.fetch;
