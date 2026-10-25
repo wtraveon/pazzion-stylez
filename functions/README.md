@@ -17,17 +17,18 @@ Do not commit actual secret values to GitHub or place them in HTML/JavaScript. S
 
 ## Endpoints
 
-- `GET /api/form-config` — returns only the public Turnstile site key and whether required Turnstile configuration is present.
+- `GET /api/form-config` — returns the public Turnstile site key, whether Turnstile is configured, and a boolean `email_notifications_configured` status. It never returns account IDs, tokens, sender addresses, or recipient addresses.
 - `POST /api/contact` — validates the contact message, verifies the Turnstile token server-side, then emails the salon inbox.
 - `POST /api/photo-release` — validates the consent fields, verifies Turnstile server-side, then emails the salon inbox.
 
-The API reports success only after the email provider accepts the message. The returned reference ID is an email-submission reference, not a database record ID. This version does not create a database or replace the salon's separate retention/back-up process; configure a suitable secure records process for signed releases before relying on these submissions as the sole legal record.
+The API reports success only when Cloudflare's response confirms the configured notification inbox was delivered to or queued, and was not reported as permanently bounced or suppressed. A queued result is not proof of final inbox receipt; confirm delivery using Cloudflare Email Sending logs and a consented end-to-end test. The returned reference ID is an email-submission reference, not a database record ID. This version does not create a database or replace the salon's separate retention/back-up process; configure a suitable secure records process for signed releases before relying on these submissions as the sole legal record.
 
 ## Safe rollout checklist
 
 1. Deploy a preview build without changing the current domain, DNS, or live Pages project.
 2. Add the environment variables above to that preview project and confirm the sender address/domain is approved for the Cloudflare Email Sending API.
 3. Use a preview-specific Turnstile widget and keys.
-4. Test valid and invalid contact submissions, declined and consented releases, guardian-required submissions, spam challenges, and email delivery.
-5. Confirm photo-release emails are retained and access-controlled appropriately.
-6. Only after the preview is verified, plan a separate production cutover. Do not change live DNS as part of preview testing.
+4. Confirm `/api/form-config` reports `email_notifications_configured: true` without exposing secrets.
+5. Test valid and invalid contact submissions, declined and consented releases, guardian-required submissions, spam challenges, and email delivery. Confirm each test reaches the intended inbox and check spam/quarantine and Cloudflare delivery logs.
+6. Confirm photo-release emails are retained and access-controlled appropriately.
+7. Only after the preview is verified, plan a separate production cutover. Do not change live DNS as part of preview testing.
