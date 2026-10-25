@@ -50,6 +50,8 @@ The tracked repository contains the `assets/` tree. The counts in [ASSET_AUDIT.m
 
 GitHub Actions runs the form regression tests, static site integrity tests, and JavaScript syntax checks on every push to `main` and pull request. A separate [production smoke-check workflow](.github/workflows/production-smoke.yml) checks the live homepage and policy, published booking-route mappings and Square endpoint reachability, Turnstile configuration, and invalid-payload handling for both form APIs after pushes and on a daily schedule.
 
+See the evidence-based [Diagnostic Coverage Matrix](docs/DIAGNOSTIC_COVERAGE.md) for the latest checked workflow runs, verified coverage, and remaining manual sign-off items.
+
 ### Production verification limits and manual sign-off
 
 The production smoke workflow checks published pages, booking URL mappings, HTTP reachability, Turnstile configuration, and invalid-payload handling. These are automated smoke checks, **not end-to-end proof** that customers can complete a booking or that form notifications arrive.
