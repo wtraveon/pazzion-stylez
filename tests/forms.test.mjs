@@ -121,7 +121,7 @@ test("sendEmail sanitizes subject newlines and reports provider success", async 
   try {
     globalThis.fetch = async (url, options) => {
       captured = { url: String(url), options, body: JSON.parse(options.body) };
-      return new Response(JSON.stringify({ success: true, result: { message_id: "msg-1" } }), { status: 200 });
+      return new Response(JSON.stringify({ success: true, result: { message_id: "msg-1", delivered: ["salon@example.com"], queued: [], permanent_bounces: [], suppressed_recipients: [] } }), { status: 200 });
     };
     const result = await sendEmail({
       CLOUDFLARE_ACCOUNT_ID: "account",
