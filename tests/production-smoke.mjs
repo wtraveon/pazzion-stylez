@@ -129,7 +129,7 @@ const publishedPageResults = await Promise.all(sitemapUrls.map(async url => {
 console.log(`Published sitemap pages verified: ${publishedPageResults.length}`);
 
 const policyPage = await getText("/policies/");
-assert.match(policyPage, /does not require deposits for services or consultations/i,
+assert.match(policyPage, /does not require deposits, including non-refundable deposits, for (?:any )?services? or consultations?/i,
   "Live policy page must state that services and consultations do not require deposits");
 assert.match(policyPage, /No deposit is collected, so there is no deposit to forfeit/i,
   "Live no-show policy must not contradict the no-deposit policy");
