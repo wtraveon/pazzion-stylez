@@ -426,8 +426,11 @@ test("homepage and salon policy agree on deposits and new-client consultations",
   const homepage = await readFile(path.join(root, "index.html"), "utf8");
   const policies = await readFile(path.join(root, "policies", "index.html"), "utf8");
   for (const [name, html] of [["homepage", homepage], ["policies page", policies]]) {
-    assert.match(html, /No deposit is required/i, `${name} should communicate the no-deposit policy`);
+    assert.match(html, /does not require deposits, including non-refundable deposits/i,
+      `${name} should explicitly rule out both required and non-refundable deposits`);
     assert.match(html, /\$25 consultation/i, `${name} should disclose the new-client consultation fee`);
+    assert.doesNotMatch(html, /non-refundable deposit may be required|deposit may be required|deposit required for selected services/i,
+      `${name} must not imply that deposits may be required`);
   }
 });
 
