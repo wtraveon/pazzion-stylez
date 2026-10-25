@@ -27,11 +27,11 @@ jobs:
       - name: Audit homepage on mobile
         run: npx --yes lighthouse@12 https://pazzionstylez.com/ --quiet --chrome-flags="--headless --no-sandbox" --form-factor=mobile --output=json --output-path=lighthouse-reports/home-mobile.json
       - name: Audit homepage on desktop
-        run: npx --yes lighthouse@12 https://pazzionstylez.com/ --quiet --chrome-flags="--headless --no-sandbox" --form-factor=desktop --output=json --output-path=lighthouse-reports/home-desktop.json
+        run: npx --yes lighthouse@12 https://pazzionstylez.com/ --quiet --chrome-flags="--headless --no-sandbox" --preset=desktop --output=json --output-path=lighthouse-reports/home-desktop.json
       - name: Audit products page on mobile
         run: npx --yes lighthouse@12 https://pazzionstylez.com/products/ --quiet --chrome-flags="--headless --no-sandbox" --form-factor=mobile --output=json --output-path=lighthouse-reports/products-mobile.json
       - name: Audit products page on desktop
-        run: npx --yes lighthouse@12 https://pazzionstylez.com/products/ --quiet --chrome-flags="--headless --no-sandbox" --form-factor=desktop --output=json --output-path=lighthouse-reports/products-desktop.json
+        run: npx --yes lighthouse@12 https://pazzionstylez.com/products/ --quiet --chrome-flags="--headless --no-sandbox" --preset=desktop --output=json --output-path=lighthouse-reports/products-desktop.json
       - name: Upload Lighthouse reports
         if: always()
         uses: actions/upload-artifact@v4
