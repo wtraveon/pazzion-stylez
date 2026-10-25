@@ -209,7 +209,7 @@ test("sendEmail treats non-JSON provider responses as a failed delivery", async 
       FORM_NOTIFICATION_TO: "salon@example.com",
       FROM_EMAIL: "website@example.com"
     }, "Subject", "<p>Body</p>");
-    assert.deepEqual(result, { ok: false, id: null });
+    assert.deepEqual(result, { ok: false, id: null, deliveryError: true });
   } finally {
     globalThis.fetch = originalFetch;
   }
