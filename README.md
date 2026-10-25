@@ -50,4 +50,10 @@ The tracked repository contains the `assets/` tree. The counts in [ASSET_AUDIT.m
 
 GitHub Actions runs the form regression tests, static site integrity tests, and JavaScript syntax checks on every push to `main` and pull request. A separate [production smoke-check workflow](.github/workflows/production-smoke.yml) checks the live homepage and policy, published booking-route mappings and Square endpoint reachability, Turnstile configuration, and invalid-payload handling for both form APIs after pushes and on a daily schedule.
 
-These automated checks are not a substitute for a real browser test of form submissions and receipt of notification emails. The production smoke test has observed HTTP 429 from Square for one route in one run, which indicates rate limiting and does not conclusively verify that route's booking experience. Confirm inbox delivery with a real test submission and verify any rate-limited booking route directly in a browser before considering all production flows fully verified.
+### Production verification limits and manual sign-off
+
+The production smoke workflow checks published pages, booking URL mappings, HTTP reachability, Turnstile configuration, and invalid-payload handling. These are automated smoke checks, **not end-to-end proof** that customers can complete a booking or that form notifications arrive.
+
+- **Square booking routes:** HTTP 403/429 responses indicate automated access was challenged or rate-limited. The workflow now prints an explicit `MANUAL VERIFICATION REQUIRED` warning for these responses. A reachable URL or non-5xx status does not prove the booking calendar loads or a booking can be completed. Open each flagged route in a normal browser and verify the booking experience.
+- **Form delivery:** API validation tests intentionally submit invalid payloads; they do not send a real notification. Submit a consented test through each live form (contact and photo release), then confirm the notification reaches the configured inbox. Do not mark delivery verified based on a successful smoke workflow alone.
+- **Release sign-off:** Record the date, route/form tested, result, and inbox confirmation. If a live check cannot be completed, leave that flow marked **unverified** rather than treating the automated check as a pass.
