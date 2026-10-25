@@ -11,7 +11,7 @@ export function onRequestGet({ env }) {
   const smsNotificationsConfigured = Boolean(
     env.TWILIO_ACCOUNT_SID &&
     env.TWILIO_AUTH_TOKEN &&
-    /^\\+[1-9]\\d{7,14}$/.test(env.TWILIO_FROM_NUMBER || "")
+    /^\+[1-9]\d{7,14}$/.test(env.TWILIO_FROM_NUMBER || "")
   );
   return json({
     turnstile_enabled: turnstileConfigured,
