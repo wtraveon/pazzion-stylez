@@ -552,8 +552,10 @@ test("contact, consultation, and booking fallback links are present", async () =
     "The contact form must distinguish messages from appointment booking");
   assert.ok(homepage.includes('href="/policies/"'),
     "The homepage must link to the published salon policies");
-  assert.ok(policy.includes('No deposit is required') && policy.includes('$25 consultation'),
-    "The policy page must state the no-deposit rule and new-client consultation fee");
+  assert.match(policy, /does not require deposits, including non-refundable deposits/i,
+    "The policy page must state that services and consultations do not require deposits");
+  assert.match(policy, /\$25(?: new-client)? consultation/i,
+    "The policy page must state the new-client consultation fee");
   for (const contact of [
     'href="tel:+12524681243"',
     'href="tel:+12522940280"',
