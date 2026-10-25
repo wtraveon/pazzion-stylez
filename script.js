@@ -75,7 +75,8 @@ function openBookingRoute(status){
     if(bookingStatusMessage){bookingStatusMessage.textContent='Online booking for this selection is temporarily unavailable. Call Pazzion Stylez Salon / Appointments / Consultations at 252-468-1243 for assistance.';bookingStatusMessage.focus();}
     return;
   }
-  window.location.assign(url);
+  // This runs directly from the user's click, so browsers allow the booking page to open separately.
+  window.open(url,'_blank','noopener,noreferrer');
 }
 stylistButtons.forEach(button=>button.addEventListener('click',()=>selectBookingStylist(button.dataset.stylist)));
 clientStatusButtons.forEach(button=>button.addEventListener('click',()=>openBookingRoute(button.dataset.clientStatus)));
