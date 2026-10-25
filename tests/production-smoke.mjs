@@ -32,6 +32,16 @@ assert.match(homepage, /Browse the general Pazzion Stylez Square storefront and 
   "Live homepage FAQ must accurately explain how to find products in the general Square storefront");
 assert.doesNotMatch(homepage, /Pickup and shipping options are shown during checkout/i,
   "Live homepage must not promise unverified Square checkout options");
+
+assert.match(homepage, /does not require deposits, including non-refundable deposits/i,
+  "Live homepage must state the current no-deposit policy consistently");
+const squareStoreLinkTags = (html) => [...html.matchAll(/<a\\b[^>]*href=["']https:\\/\\/pazzion-stylez-llc\\.square\\.site\\/?["'][^>]*>/gi)].map(match => match[0]);
+const homepageStoreLinks = squareStoreLinkTags(homepage);
+assert.ok(homepageStoreLinks.length > 0, "Homepage should include Square storefront links");
+for (const link of homepageStoreLinks) {
+  assert.match(link, /target=["']_blank["']/i, "Homepage Square storefront links must open a separate tab");
+  assert.match(link, /rel=["'][^"']*noopener[^"']*["']/i, "Homepage Square storefront links must use noopener");
+}
 const photoReleasePage = await getText("/photo-release/");
 for (const stylist of ["LaToya Terry", "Kottia Cotton", "JahNiqua Speight"]) {
   assert.match(photoReleasePage, new RegExp(`<option value=["']${stylist}["']>${stylist}</option>`, "i"),
@@ -44,6 +54,13 @@ assert.doesNotMatch(productPage.match(/<div class="hero-actions">[^]*?<\/div>/i)
   "Live product hero must not show the outdated Shop Available Products label");
 assert.match(productPage, /Product links open the general Square storefront, not individual product pages/i,
   "Live product page must clarify that product links do not open individual product listings");
+
+const productStoreLinks = squareStoreLinkTags(productPage);
+assert.ok(productStoreLinks.length > 0, "Product page should include Square storefront links");
+for (const link of productStoreLinks) {
+  assert.match(link, /target=["']_blank["']/i, "Product page Square storefront links must open a separate tab");
+  assert.match(link, /rel=["'][^"']*noopener[^"']*["']/i, "Product page Square storefront links must use noopener");
+}
 assert.match(homepage, /href=["']\/?\?stylist=jahniqua#booking["'][^>]*>Request Appointment with Jah/i,
   "Live homepage should expose JahNiqua's preselected appointment request path");
 assert.match(homepage, /data-stylist=["']jahniqua["']/i,
@@ -168,6 +185,9 @@ assert.match(configResponse.headers.get("content-type") || "", /application\/jso
   "/api/form-config must return JSON");
 const config = await configResponse.json();
 assert.equal(config.turnstile_enabled, true, "Production Turnstile must be configured");
+
+assert.match(homepage, /does not require deposits, including non-refundable deposits/i,
+  "Live homepage and policy page must agree on the no-deposit policy");
 assert.ok(typeof config.sitekey === "string" && config.sitekey.length > 0,
   "Production form configuration must expose a public Turnstile site key");
 assert.equal(config.email_notifications_configured, true,
