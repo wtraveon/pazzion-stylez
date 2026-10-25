@@ -196,6 +196,8 @@ assert.ok(typeof config.sitekey === "string" && config.sitekey.length > 0,
   "Production form configuration must expose a public Turnstile site key");
 assert.equal(config.email_notifications_configured, true,
   "Production email notifications must have all four required Cloudflare Email Sending settings configured");
+assert.equal(config.sms_notifications_configured, true,
+  "Production SMS notifications must have Twilio credentials and a valid sender number configured");
 
 for (const endpoint of ["/api/contact", "/api/photo-release"]) {
   const response = await request(endpoint, {
@@ -214,5 +216,5 @@ for (const endpoint of ["/api/contact", "/api/photo-release"]) {
   assert.equal(result.success, false, `${endpoint} should reject the invalid test payload`);
 }
 
-console.log("Production smoke checks passed: homepage, photo-release stylist options, current policy, all six Square route mappings, Turnstile config, and both form API validation paths.");
-console.log("MANUAL VERIFICATION REQUIRED: successful API validation does not prove real email delivery. Submit a consented test through each real form and confirm the notification arrives in the intended inbox before declaring production form delivery verified.");
+console.log("Production smoke checks passed: homepage, photo-release stylist options, current policy, all six Square route mappings, Turnstile config, email/SMS notification configuration, and both form API validation paths.");
+console.log("MANUAL VERIFICATION REQUIRED: successful API validation does not prove real email delivery. Submit a consented test through each real form and confirm the full notification arrives in the intended inbox and the SMS alert arrives at 252-360-9630 before declaring production form delivery verified.");
