@@ -1,4 +1,4 @@
-import { clean, json, readJson, validEmail, validPhone, validDate, verifyTurnstile, emailHtml, sendEmail, methodNotAllowed } from "../_lib/forms.js";
+import { clean, json, readJson, validEmail, validPhone, validDate, verifyTurnstile, emailHtml, sendEmail, sendSms, methodNotAllowed } from "../_lib/forms.js";
 
 export async function onRequestPost({ request, env }) {
   const data = await readJson(request);
@@ -87,11 +87,15 @@ export async function onRequestPost({ request, env }) {
     ["Guardian name", guardianName], ["Guardian relationship", guardianRelationship],
     ["Guardian email", guardianEmail], ["Guardian phone", guardianPhone], ["Guardian typed signature", guardianSignature]
   ];
-  const sent = await sendEmail(env, `Photo/video release submitted: ${client}`, emailHtml("Pazzion Stylez photo/video release submission", fields, recordId), email);
-  if (!sent.ok) {
-    return json({ success: false, message: sent.configurationError
-      ? "Photo-release submission is not configured yet. Please contact the salon before any photos or video are used."
-      : "We could not submit the release right now. Please contact the salon before any photos or video are used." }, 503);
+  const [sent, sms] = await Promise.all([
+    sendEmail(env, `Photo/video release submitted: ${client}`, emailHtml("Pazzion Stylez photo/video release submission", fields, recordId), email),
+    sendSms(env, `Pazzion Stylez: New photo/video release form submission. Ref: ${recordId}. Check salon email for signed details.`)
+  ]);
+  if (!sent.ok || !sms.ok) {
+    const configurationError = sent.configurationError || sms.configurationError;
+    return json({ success: false, message: configurationError
+      ? "Photo-release notifications are not fully configured. Please contact the salon at 252-360-9630 before any photos or video are used."
+      : "We could not confirm both email and text notifications. Please contact the salon at 252-360-9630 before relying on this submission." }, 503);
   }
   return json({ success: true, record_id: recordId });
 }
