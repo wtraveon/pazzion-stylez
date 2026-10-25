@@ -712,14 +712,29 @@ test("contact form locks after success and remains retryable after failure", asy
   assert.match(recovery, /submitButton\.textContent='Send Message'/);
 });
 
-test("all Square storefront links open in a new tab safely", async () => {
-  for (const relativePath of ["index.html", "products/index.html"]) {
+test("all Square website links open in a new tab safely", async () => {
+  const htmlPaths = [
+    "index.html", "education/index.html", "photo-release/index.html", "policies/index.html",
+    "privacy/index.html", "products/index.html", "services/index.html",
+    "services/braids-protective-styles/index.html", "services/hair-color/index.html",
+    "services/healthy-natural-hair/index.html", "services/locs/index.html",
+    "services/silk-press/index.html", "services/wigs-weaves/index.html",
+    "team/jahniqua-speight/index.html", "team/kottia-cotton/index.html", "team/latoya-terry/index.html"
+  ];
+  let total = 0;
+  for (const relativePath of htmlPaths) {
     const html = await readFile(path.join(root, relativePath), "utf8");
-    const links = [...html.matchAll(/<a\b[^>]*href=["']https:\/\/pazzion-stylez-llc\.square\.site\/?["'][^>]*>/gi)];
-    assert.ok(links.length > 0, relativePath + " should include Square storefront links");
+    const links = [...html.matchAll(/<a\b[^>]*href=["']https?:\/\/[^"']*(?:squareup\.com|square\.site|square\.com)[^"']*["'][^>]*>/gi)];
+    total += links.length;
     for (const [link] of links) {
       assert.match(link, /target=["']_blank["']/i, relativePath + " Square link must open a new tab");
-      assert.match(link, /rel=["'][^"']*noopener[^"']*["']/i, relativePath + " Square link must use noopener");
+      assert.match(link, /rel=["'][^"']*(?:noopener|noreferrer)[^"']*["']/i, relativePath + " Square link must protect the opener");
     }
   }
+  assert.ok(total > 0, "The site should include Square links to validate");
+  const script = await readFile(path.join(root, "script.js"), "utf8");
+  assert.match(script, /window\.open\(url,\s*['_"]_blank['_"],\s*['"]noopener,noreferrer['"]\)/,
+    "Interactive Square booking routes must open in a separate tab with opener protection");
+  assert.doesNotMatch(script, /window\.location\.assign\(url\)/,
+    "Interactive Square booking routes must not replace the salon website tab");
 });
