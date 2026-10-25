@@ -1,4 +1,4 @@
-import { clean, json, readJson, validEmail, validPhone, verifyTurnstile, emailHtml, sendEmail, methodNotAllowed } from "../_lib/forms.js";
+import { clean, json, readJson, validEmail, validPhone, verifyTurnstile, emailHtml, sendEmail, sendSms, methodNotAllowed } from "../_lib/forms.js";
 
 export async function onRequestPost({ request, env }) {
   const data = await readJson(request);
@@ -35,11 +35,15 @@ export async function onRequestPost({ request, env }) {
     ["Reference", recordId], ["Name", name], ["Email", email], ["Phone", phone],
     ["Topic", topic], ["Preferred stylist", preferred], ["Message", message]
   ];
-  const sent = await sendEmail(env, `Website inquiry: ${topic}`, emailHtml("New Pazzion Stylez website inquiry", fields, recordId), email || undefined);
-  if (!sent.ok) {
-    return json({ success: false, message: sent.configurationError
-      ? "Online messages are not configured yet. Please call or email Pazzion Stylez directly."
-      : "We could not send your message right now. Please call or email Pazzion Stylez." }, 503);
+  const [sent, sms] = await Promise.all([
+    sendEmail(env, `Website inquiry: ${topic}`, emailHtml("New Pazzion Stylez website inquiry", fields, recordId), email || undefined),
+    sendSms(env, `Pazzion Stylez: New contact form submission (topic: ${topic}). Ref: ${recordId}. Check salon email for details.`)
+  ]);
+  if (!sent.ok || !sms.ok) {
+    const configurationError = sent.configurationError || sms.configurationError;
+    return json({ success: false, message: configurationError
+      ? "Website notifications are not fully configured yet. Please call Pazzion Stylez at 252-360-9630."
+      : "We could not confirm both email and text notifications. Please call Pazzion Stylez at 252-360-9630 before submitting again." }, 503);
   }
   return json({ success: true, record_id: recordId });
 }
