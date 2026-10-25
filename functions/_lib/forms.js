@@ -149,13 +149,13 @@ export async function sendSms(env, message) {
   const accountSid = clean(env.TWILIO_ACCOUNT_SID, 64);
   const authToken = clean(env.TWILIO_AUTH_TOKEN, 128);
   const fromNumber = clean(env.TWILIO_FROM_NUMBER, 20);
-  if (!accountSid || !authToken || !/^\\+[1-9]\\d{7,14}$/.test(fromNumber)) {
+  if (!accountSid || !authToken || !/^\+[1-9]\d{7,14}$/.test(fromNumber)) {
     return { ok: false, configurationError: true };
   }
 
   // Keep signed release and guardian details out of SMS. Text only identifies
   // the form and reference; full submission details remain in the salon inbox.
-  const bodyText = clean(message, 500).replace(/[\\r\\n\\t]+/g, " ");
+  const bodyText = clean(message, 500).replace(/[\r\n\t]+/g, " ");
   if (!bodyText) return { ok: false, configurationError: false };
 
   const controller = new AbortController();
