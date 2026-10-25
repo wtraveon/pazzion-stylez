@@ -170,6 +170,8 @@ const config = await configResponse.json();
 assert.equal(config.turnstile_enabled, true, "Production Turnstile must be configured");
 assert.ok(typeof config.sitekey === "string" && config.sitekey.length > 0,
   "Production form configuration must expose a public Turnstile site key");
+assert.equal(config.email_notifications_configured, true,
+  "Production email notifications must have all four required Cloudflare Email Sending settings configured");
 
 for (const endpoint of ["/api/contact", "/api/photo-release"]) {
   const response = await request(endpoint, {
