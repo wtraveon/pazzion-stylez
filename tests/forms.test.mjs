@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  clean, validEmail, validDate, validPhone, escapeHtml, emailHtml, readJson, methodNotAllowed, verifyTurnstile, sendEmail
+  clean, validEmail, validDate, validPhone, escapeHtml, emailHtml, readJson, methodNotAllowed, verifyTurnstile, sendEmail, sendSms
 } from "../functions/_lib/forms.js";
 
 test("clean trims strings and caps their length", () => {
@@ -256,6 +256,60 @@ test("verifyTurnstile fails closed when verification network request fails", asy
     const request = new Request("https://pazzionstylez.com/api/contact", { method: "POST" });
     const env = { TURNSTILE_SITE_KEY: "site-key", TURNSTILE_SECRET_KEY: "secret" };
     assert.equal(await verifyTurnstile("token", request, env, "contact"), false);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+
+test("sendSms sends a minimized notification to the salon number", async () => {
+  const originalFetch = globalThis.fetch;
+  let captured;
+  const env = {
+    TWILIO_ACCOUNT_SID: "account-test",
+    TWILIO_AUTH_TOKEN: "example-token",
+    TWILIO_FROM_NUMBER: "+15551234567"
+  };
+  try {
+    globalThis.fetch = async (url, options) => {
+      captured = { url: String(url), options, body: new URLSearchParams(options.body) };
+      return new Response(JSON.stringify({ sid: "message-test", status: "queued" }), { status: 201 });
+    };
+    const result = await sendSms(env, "New contact form\nRef: ref-123");
+    assert.equal(result.ok, true);
+    assert.equal(result.id, "message-test");
+    assert.match(captured.url, /api\.twilio\.com\/2010-04-01\/Accounts\/account-test\/Messages\.json$/);
+    assert.equal(captured.options.headers.Authorization, "Basic " + btoa(env.TWILIO_ACCOUNT_SID + ":" + env.TWILIO_AUTH_TOKEN));
+    assert.equal(captured.body.get("To"), "+12523609630");
+    assert.equal(captured.body.get("From"), "+15551234567");
+    assert.equal(captured.body.get("Body"), "New contact form Ref: ref-123");
+    assert.doesNotMatch(captured.body.get("Body"), /signature|guardian|consent/i);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("sendSms fails safely when Twilio configuration is missing or invalid", async () => {
+  assert.deepEqual(await sendSms({}, "New contact form"), { ok: false, configurationError: true });
+  assert.deepEqual(await sendSms({
+    TWILIO_ACCOUNT_SID: "account-test",
+    TWILIO_AUTH_TOKEN: "example-token",
+    TWILIO_FROM_NUMBER: "not-a-number"
+  }, "New contact form"), { ok: false, configurationError: true });
+});
+
+test("sendSms reports provider rejection without exposing provider details", async () => {
+  const originalFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = async () => new Response(JSON.stringify({
+      code: 20003, message: "Sensitive provider auth detail"
+    }), { status: 401 });
+    const result = await sendSms({
+      TWILIO_ACCOUNT_SID: "account-test",
+      TWILIO_AUTH_TOKEN: "example-token",
+      TWILIO_FROM_NUMBER: "+15551234567"
+    }, "New contact form");
+    assert.deepEqual(result, { ok: false, id: null, deliveryError: true });
   } finally {
     globalThis.fetch = originalFetch;
   }
