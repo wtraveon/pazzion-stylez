@@ -8,11 +8,17 @@ export function onRequestGet({ env }) {
     env.FORM_NOTIFICATION_TO &&
     env.FROM_EMAIL
   );
+  const smsNotificationsConfigured = Boolean(
+    env.TWILIO_ACCOUNT_SID &&
+    env.TWILIO_AUTH_TOKEN &&
+    /^\\+[1-9]\\d{7,14}$/.test(env.TWILIO_FROM_NUMBER || "")
+  );
   return json({
     turnstile_enabled: turnstileConfigured,
     sitekey: turnstileConfigured ? env.TURNSTILE_SITE_KEY : "",
     configuration_error: !turnstileConfigured,
-    email_notifications_configured: emailNotificationsConfigured
+    email_notifications_configured: emailNotificationsConfigured,
+    sms_notifications_configured: smsNotificationsConfigured
   });
 }
 
