@@ -38,8 +38,8 @@ for (const stylist of ["LaToya Terry", "Kottia Cotton", "JahNiqua Speight"]) {
     `Live photo-release form should offer ${stylist}`);
 }
 const productPage = await getText("/products/");
-assert.match(productPage, /<div class="hero-actions">[^]*?<a class="btn btn-primary"[^>]*>Browse Square store<\/a>/i,
-  "Live product hero CTA must use the accurate general-storefront label");
+assert.match(productPage, /<div class="hero-actions">[^]*?<a class="btn btn-primary"[^>]*>Find products in Square <span aria-hidden="true">↗<\/span><\/a>/i,
+  "Live product hero CTA must explain that shoppers should search the general Square storefront");
 assert.doesNotMatch(productPage.match(/<div class="hero-actions">[^]*?<\/div>/i)?.[0] || "", /Shop Available Products/i,
   "Live product hero must not show the outdated Shop Available Products label");
 assert.match(productPage, /Product links open the general Square storefront, not individual product pages/i,
