@@ -738,3 +738,12 @@ test("all Square website links open in a new tab safely", async () => {
   assert.doesNotMatch(script, /window\.location\.assign\(url\)/,
     "Interactive Square booking routes must not replace the salon website tab");
 });
+
+
+test("contact form fallback phone matches the published salon contact number", async () => {
+  const endpoint = await readFile(path.join(root, "functions", "api", "contact.js"), "utf8");
+  const homepage = await readFile(path.join(root, "index.html"), "utf8");
+  assert.match(homepage, /tel:\+12524681243/, "homepage should publish the salon phone number");
+  assert.match(endpoint, /252-468-1243/, "contact form fallback should use the published salon phone number");
+  assert.doesNotMatch(endpoint, /252-360-9630/, "contact form should not display the outdated phone number");
+});
