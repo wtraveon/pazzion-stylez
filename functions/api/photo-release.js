@@ -95,8 +95,8 @@ export async function onRequestPost({ request, env }) {
   );
   if (!sent.ok) {
     return json({ success: false, message: sent.configurationError
-      ? "Photo-release email notifications are not configured. Please contact the salon at 252-360-9630 before any photos or video are used."
-      : "We could not confirm delivery of this release. Please contact the salon at 252-360-9630 before relying on this submission." }, 503);
+      ? "Photo-release email notifications are not configured. Please contact the salon at 252-468-1243 before any photos or video are used."
+      : "We could not confirm delivery of this release. Please contact the salon at 252-468-1243 before relying on this submission." }, 503);
   }
   return json({ success: true, record_id: recordId });
 }
