@@ -145,52 +145,6 @@ export async function sendEmail(env, subject, html, replyTo) {
   }
 }
 
-export async function sendSms(env, message) {
-  const accountSid = clean(env.TWILIO_ACCOUNT_SID, 64);
-  const authToken = clean(env.TWILIO_AUTH_TOKEN, 128);
-  const fromNumber = clean(env.TWILIO_FROM_NUMBER, 20);
-  if (!accountSid || !authToken || !/^\+[1-9]\d{7,14}$/.test(fromNumber)) {
-    return { ok: false, configurationError: true };
-  }
-
-  // Keep signed release and guardian details out of SMS. Text only identifies
-  // the form and reference; full submission details remain in the salon inbox.
-  const bodyText = clean(message, 500).replace(/[\r\n\t]+/g, " ");
-  if (!bodyText) return { ok: false, configurationError: false };
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 10000);
-  try {
-    const response = await fetch(
-      `https://api.twilio.com/2010-04-01/Accounts/${encodeURIComponent(accountSid)}/Messages.json`,
-      {
-        method: "POST",
-        headers: {
-          "Authorization": `Basic ${btoa(accountSid + ":" + authToken)}`,
-          "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: new URLSearchParams({
-          To: "+12523609630",
-          From: fromNumber,
-          Body: bodyText
-        }),
-        signal: controller.signal
-      }
-    );
-    const result = await response.json().catch(() => ({}));
-    const ok = response.ok && typeof result.sid === "string" && result.sid.length > 0;
-    return {
-      ok,
-      id: ok ? result.sid : null,
-      ...(ok ? {} : { deliveryError: true })
-    };
-  } catch {
-    return { ok: false, deliveryError: true };
-  } finally {
-    clearTimeout(timeout);
-  }
-}
-
 export async function readJson(request) {
   const type = (request.headers.get("Content-Type") || "").split(";", 1)[0].trim().toLowerCase();
   if (type !== "application/json") return null;
