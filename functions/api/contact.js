@@ -43,8 +43,8 @@ export async function onRequestPost({ request, env }) {
   );
   if (!sent.ok) {
     return json({ success: false, message: sent.configurationError
-      ? "Website email notifications are not configured yet. Please call Pazzion Stylez at 252-360-9630."
-      : "We could not confirm delivery of your message. Please call Pazzion Stylez at 252-360-9630 before submitting again." }, 503);
+      ? "Website email notifications are not configured yet. Please call Pazzion Stylez at 252-468-1243."
+      : "We could not confirm delivery of your message. Please call Pazzion Stylez at 252-468-1243 before submitting again." }, 503);
   }
   return json({ success: true, record_id: recordId });
 }
