@@ -35,7 +35,7 @@ assert.doesNotMatch(homepage, /Pickup and shipping options are shown during chec
 
 assert.match(homepage, /does not require deposits, including non-refundable deposits/i,
   "Live homepage must state the current no-deposit policy consistently");
-const squareStoreLinkTags = (html) => [...html.matchAll(/<a\\b[^>]*href=["']https:\\/\\/pazzion-stylez-llc\\.square\\.site\\/?["'][^>]*>/gi)].map(match => match[0]);
+const squareStoreLinkTags = (html) => [...html.matchAll(/<a\b[^>]*href=["']https:\/\/pazzion-stylez-llc\.square\.site\/?["'][^>]*>/gi)].map(match => match[0]);
 const homepageStoreLinks = squareStoreLinkTags(homepage);
 assert.ok(homepageStoreLinks.length > 0, "Homepage should include Square storefront links");
 for (const link of homepageStoreLinks) {
